@@ -8,7 +8,7 @@ Codespaces runs the whole workshop in the browser: no Docker, Python, or API key
 
 1. Click the button above (or **Code → Codespaces → Create codespace on main** on the repository page).
 2. Keep the default machine type: the devcontainer asks for 4 cores (16 GB RAM, 32 GB disk), which Oracle and the ONNX load need.
-3. Wait for creation to finish, about 10 minutes the first time. Follow it in the **Codespaces: creation log** (Command Palette → *Codespaces: View Creation Log*). It ends with `All requested checks passed.`
+3. Wait for creation to finish, about 10 minutes the first time. Follow it in the **Codespaces: creation log** (Command Palette → *Codespaces: View Creation Log*). It is done when it prints `Workshop environment ready.`; an earlier `All requested checks passed.` comes from the offline file check that runs before Oracle starts.
 4. In the Codespace terminal, confirm the environment:
 
    ```bash
@@ -49,7 +49,7 @@ bash .devcontainer/post-create.sh
 
 ## Instructor checks before the event
 
-- Create a fresh Codespace from `main` and confirm the creation log ends with `All requested checks passed.`; note the creation time. From your own terminal with the GitHub CLI:
+- Create a fresh Codespace from `main` and confirm the creation log ends with `Workshop environment ready.`; note the creation time. From your own terminal with the GitHub CLI:
 
   ```bash
   CS=$(gh codespace create -R PacktPublishing/Build_Memory_Aware_AI_Agents \
@@ -57,6 +57,6 @@ bash .devcontainer/post-create.sh
   gh codespace ssh -c "$CS" -- tail -f /workspaces/.codespaces/.persistedshare/creation.log
   ```
 
-  Stop the `tail` with Ctrl-C after `All requested checks passed.`, run the notebook check above through `gh codespace ssh -c "$CS"`, then delete it: `gh codespace delete -c "$CS" -f`.
+  Stop the `tail` with Ctrl-C after `Workshop environment ready.`, run the notebook check above through `gh codespace ssh -c "$CS"`, then delete it: `gh codespace delete -c "$CS" -f`.
 - Optional: enable **Codespaces prebuilds** for `main` (repository **Settings → Codespaces**, needs admin). Prebuilds cache the `on-create` step (Python environment); the Oracle image download and first boot still happen per Codespace.
 - Codespaces stop after 30 idle minutes by default; the `postStartCommand` restarts Oracle on resume, and the data volume survives.

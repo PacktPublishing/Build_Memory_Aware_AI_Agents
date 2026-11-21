@@ -13,8 +13,12 @@
   },
 
   "features": {
+    // Docker 28, not latest: Docker 29 defaults to the containerd image store, which keeps the
+    // compressed layers next to the unpacked ones. The Oracle image (~4 GB pulled, ~14 GB unpacked)
+    // then filled the 32 GB Codespace disk and the container was never created.
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
-      "moby": false
+      "moby": false,
+      "version": "28"
     },
     // Lets the Codespace owner use `gh codespace ssh` / `gh codespace logs` from a local terminal.
     "ghcr.io/devcontainers/features/sshd:1": {}

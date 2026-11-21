@@ -30,7 +30,7 @@ Pick one path. Paste the commands one at a time, in order; a line ending in `\` 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/PacktPublishing/Build_Memory_Aware_AI_Agents)
 
 1. Click the button, keep the default 4-core machine, then **Create codespace**.
-2. Wait for creation, about 10 minutes the first time (mostly the Oracle image download). It installs the Python environment and the notebook kernel, starts Oracle AI Database, loads the ONNX model, and runs the readiness check. Follow it with Command Palette → **Codespaces: View Creation Log**; it ends with `All requested checks passed.`
+2. Wait for creation, about 10 minutes the first time (mostly the Oracle image download). It installs the Python environment and the notebook kernel, starts Oracle AI Database, loads the ONNX model, and runs the readiness check. Follow it with Command Palette → **Codespaces: View Creation Log**; it is done when it prints `Workshop environment ready.` (an earlier `All requested checks passed.` is only the offline file check).
 3. In the Codespace terminal, confirm:
 
    ```bash
