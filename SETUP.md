@@ -268,7 +268,7 @@ The skillbox/toolbox mini-lab uses in-database embeddings:
 VECTOR_EMBEDDING(ALL_MINILM_L12_V2 USING :text AS DATA)
 ```
 
-Load that model before Module 4:
+Load that model before Lab 1 (the Break 1 checkpoint):
 
 ```bash
 uv run python scripts/load_onnx_model.py
@@ -315,13 +315,13 @@ uv run jupyter lab
 
 Run notebooks in order:
 
-1. `notebooks/01_oamp_memory_agent.ipynb`
-2. `notebooks/02_skillbox_toolbox.ipynb`
-3. `notebooks/03_synthetic_memory_bootstrap.ipynb`
+1. `notebooks/01_oamp_memory_agent.ipynb` (Lab 1)
+2. `notebooks/02_skillbox_toolbox.ipynb` (Module 4 mini-lab)
+3. `notebooks/03_synthetic_memory_bootstrap.ipynb` (Lab 2)
 
 The notebooks open on the **Python (agentic-memory workshop)** kernel. Lab 1 ends with two LLM turns: turn 1 asks for three restaurant suggestions, and turn 2, `Book the first one you suggested`, only works because the thread context card carries those suggestions. If the LLM is not configured, that section skips with the reason and the rest of the lab still runs.
 
-To run notebooks 1 and 2 end to end without opening Jupyter (stops at the first failing cell):
+To run all three end to end without opening Jupyter (stops at the first failing cell):
 
 ```bash
 mkdir -p /tmp/labs
@@ -329,6 +329,8 @@ uv run jupyter nbconvert --to notebook --execute \
   --output-dir /tmp/labs notebooks/01_oamp_memory_agent.ipynb
 uv run jupyter nbconvert --to notebook --execute \
   --output-dir /tmp/labs notebooks/02_skillbox_toolbox.ipynb
+uv run jupyter nbconvert --to notebook --execute \
+  --output-dir /tmp/labs notebooks/03_synthetic_memory_bootstrap.ipynb
 ```
 
 ---

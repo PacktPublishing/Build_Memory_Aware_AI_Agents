@@ -19,7 +19,7 @@ Codespaces runs the whole workshop in the browser: no Docker, Python, or API key
 
 Prefer Jupyter Lab? Run `uv run jupyter lab --no-browser --ip 0.0.0.0` in the terminal and open the forwarded port `8888`; the notebooks open on the **Python (agentic-memory workshop)** kernel.
 
-Run notebooks 1 and 2 end to end from the Codespace terminal (stops at the first failing cell):
+Run Lab 1, the Module 4 mini-lab and Lab 2 end to end from the Codespace terminal (stops at the first failing cell):
 
 ```bash
 mkdir -p /tmp/labs
@@ -27,6 +27,8 @@ uv run jupyter nbconvert --to notebook --execute \
   --output-dir /tmp/labs notebooks/01_oamp_memory_agent.ipynb
 uv run jupyter nbconvert --to notebook --execute \
   --output-dir /tmp/labs notebooks/02_skillbox_toolbox.ipynb
+uv run jupyter nbconvert --to notebook --execute \
+  --output-dir /tmp/labs notebooks/03_synthetic_memory_bootstrap.ipynb
 ```
 
 ## What creation does

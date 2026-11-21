@@ -67,7 +67,7 @@ Saturday, Nov 21, 2026 · 11:00–15:00 EST · 16:00–20:00 UTC
 # How today works
 
 - **4 hours** = 3h40m of content + two 10-minute breaks
-- **Two hands-on labs** (55 min and 35 min) and one mini-lab, all in Jupyter
+- **Two hands-on labs** (55 min and 35 min) and one mini-lab in Jupyter, then **Lab 3**, the Meridian Bank fraud case, at **workshopwaitingroom.com**
 - **Two live polls**, at the end of Modules 1 and 2
 - **Checkpoints**: post a screenshot in chat when you reach one
 - **Questions**: chat, any time; formal Q&A in the last 10 minutes
@@ -88,13 +88,14 @@ Chat etiquette: questions in chat, one thread per problem, setup problems tagged
 | 11:45–12:25 | Module 2: Designing an Agent Memory Architecture | concept |
 | 12:25–12:35 | **Break 1 + setup checkpoint** | 10 min |
 | 12:35–13:30 | Module 3: Build a Memory-Augmented Agent | **Lab 1** |
-| 13:30–13:40 | **Break 2** | 10 min |
-| 13:40–14:15 | Module 4: Keep Context Bounded (skillbox / toolbox) | concept + mini-lab |
+| 13:30–14:05 | Module 4: Keep Context Bounded (skillbox / toolbox) | concept + mini-lab |
+| 14:05–14:15 | **Break 2** | 10 min |
 | 14:15–14:50 | Module 5: Bootstrap Memory with Synthetic Data | **Lab 2** |
+| after Lab 2 | Meridian Bank: the fraud agent, hands-on | **Lab 3** |
 | 14:50–15:00 | Wrap, Q&A, what's next | |
 
 <!--
-Block minutes: 15 + 30 + 40 + 10 + 55 + 10 + 35 + 35 + 10 = 240.
+Block minutes: 15 + 30 + 40 + 10 + 55 + 35 + 10 + 35 + 10 = 240. Module 4 runs straight after Lab 1; Break 2 comes after Module 4. Lab 3 has no slot of its own yet.
 -->
 
 ---
@@ -503,17 +504,7 @@ Section 7 closes the connection, opens a new one, builds a fresh client, and res
 
 <!-- _class: divider -->
 
-<span class="clock">13:30–13:40 · 10 min</span>
-
-# Break 2
-
-## Pull-up point: behind on Lab 1? Post where you are stuck; catch-up screenshots are in chat
-
----
-
-<!-- _class: divider -->
-
-<span class="clock">13:40–14:15 · 35 min · concept + mini-lab</span>
+<span class="clock">13:30–14:05 · 35 min · concept + mini-lab</span>
 
 # Module 4 — Keep Context Bounded
 
@@ -642,6 +633,16 @@ The point is not the exact ranking. The point is a small, query-shaped surface i
 
 <!-- _class: divider -->
 
+<span class="clock">14:05–14:15 · 10 min</span>
+
+# Break 2
+
+## Back in 10 minutes for Lab 2. Pull-up point: behind on Lab 1? Post where you are stuck; catch-up screenshots are in chat
+
+---
+
+<!-- _class: divider -->
+
 <span class="clock">14:15–14:50 · 35 min · Lab 2</span>
 
 # Module 5 — Bootstrap Memory with Synthetic Data
@@ -729,6 +730,36 @@ Discussion: which generated records are safe bootstrap context, and which govern
 
 ---
 
+# Continual learning: where new knowledge lives
+
+The model's weights never change at runtime, yet the agent improves.
+
+| Parametric | Representational | Non-parametric |
+|---|---|---|
+| weights: fine-tuning, LoRA, RLHF | latents: embedding training, contrastive learning | tokens: RAG, memory systems, tool outputs |
+| generalises; risks forgetting; expensive | better retrieval; adds no facts | no weight updates; immediate |
+
+Our agent lives in the third column: **non-parametric memory**.
+
+---
+
+<!-- _class: lab -->
+
+# Lab 3: Meridian Bank, one investigation
+
+A fictional bank with a slice of its traffic deliberately fraudulent: 15 tables, 46,000+ rows, five seeded patterns (`STRUCTURING`, `GEO_VELOCITY`, `HIGH_RISK_COUNTRY`, `RAPID_CASH_OUT`, `LARGE_CASH_DEPOSIT`).
+
+1. Go to **workshopwaitingroom.com** and enter your GitHub username
+2. Accept the GitHub invitation (email, or the repository's invitations page)
+3. Open the repository in **GitHub Codespaces**, wait for the post-create step
+4. Open `notebook_student.ipynb` (Python 3.11 kernel) and run from the top
+
+<!--
+Lab 3 is separate from Lab 2. The repository is jasperan-org/financial-fraud-agent-harness-workshop-lightweight; collaborators' Codespaces get the LLM keys automatically, so the invitation has to be accepted before the Codespace starts.
+-->
+
+---
+
 <!-- _class: divider -->
 
 <span class="clock">14:50–15:00 · 10 min</span>
@@ -745,7 +776,7 @@ Discussion: which generated records are safe bootstrap context, and which govern
 - **Fine-tuning** on memory trajectories
 - **Companion book**: *Building Adaptive AI Agents: Memory Engineering, Continual Learning, and Agent Harnesses* (Packt)
 
-After today: the recording, the repo, a graduates' Slack channel, and office hours about two weeks out.
+After today: the recording, the repos, a graduates' Slack channel, and office hours about two weeks out.
 
 ---
 

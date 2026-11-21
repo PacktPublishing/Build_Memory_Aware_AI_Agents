@@ -25,6 +25,8 @@
 
 Pick one path. Paste the commands one at a time, in order; a line ending in `\` continues on the next line, so paste both together.
 
+The session runs the notebooks in this order: **Lab 1** (`01_oamp_memory_agent.ipynb`, Module 3), the **Module 4 mini-lab** (`02_skillbox_toolbox.ipynb`) and **Lab 2** (`03_synthetic_memory_bootstrap.ipynb`, Module 5). **Lab 3**, the Meridian Bank fraud case, lives in a separate repository you join through [workshopwaitingroom.com](https://workshopwaitingroom.com): see [Lab 3](#lab-3--meridian-bank-workshopwaitingroomcom).
+
 ### Option A — GitHub Codespaces (nothing to install)
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/PacktPublishing/Build_Memory_Aware_AI_Agents)
@@ -37,7 +39,7 @@ Pick one path. Paste the commands one at a time, in order; a line ending in `\` 
    uv run workshop-smoke-check --require-onnx
    ```
 
-4. Open `notebooks/01_oamp_memory_agent.ipynb`. If VS Code asks for a kernel: **Select Kernel → Python Environments → .venv**. Run the cells in order, then `02_skillbox_toolbox.ipynb` and `03_synthetic_memory_bootstrap.ipynb`.
+4. Open `notebooks/01_oamp_memory_agent.ipynb` (Lab 1). If VS Code asks for a kernel: **Select Kernel → Python Environments → .venv**. Run the cells in order, then `02_skillbox_toolbox.ipynb` (Module 4 mini-lab) and `03_synthetic_memory_bootstrap.ipynb` (Lab 2).
 
 Details and the lifecycle scripts: [`CODESPACES.md`](CODESPACES.md).
 
@@ -61,7 +63,7 @@ uv run jupyter lab
 - Both Docker and Podman installed? Pin one first: `export CONTAINER_ENGINE=podman` (or `docker`).
 - `uv run workshop-kernel` registers the **Python (agentic-memory workshop)** kernel inside `.venv`. The notebooks ask for that kernel by name, so a stale `python3` kernel from another project cannot hijack them.
 - `setup_oracle.sh` takes 3–5 minutes on first boot; re-running any step is safe.
-- In Jupyter Lab, open `notebooks/01_oamp_memory_agent.ipynb`, `02_skillbox_toolbox.ipynb`, `03_synthetic_memory_bootstrap.ipynb` in order and run each top to bottom.
+- In Jupyter Lab, open `notebooks/01_oamp_memory_agent.ipynb` (Lab 1), `02_skillbox_toolbox.ipynb` (Module 4 mini-lab) and `03_synthetic_memory_bootstrap.ipynb` (Lab 2) in that order and run each top to bottom.
 
 No git? Download the ZIP instead: <https://github.com/PacktPublishing/Build_Memory_Aware_AI_Agents/archive/refs/heads/main.zip>, unzip it, and `cd` into the folder. Prefer not to type? Open the folder in Claude Code or Codex and ask:
 
@@ -69,7 +71,7 @@ No git? Download the ZIP instead: <https://github.com/PacktPublishing/Build_Memo
 
 ### Check the labs without opening Jupyter
 
-Runs notebooks 1 and 2 end to end and stops at the first failing cell (works locally and in the Codespace terminal):
+Runs Lab 1, the mini-lab and Lab 2 end to end and stops at the first failing cell (works locally and in the Codespace terminal):
 
 ```bash
 mkdir -p /tmp/labs
@@ -77,19 +79,34 @@ uv run jupyter nbconvert --to notebook --execute \
   --output-dir /tmp/labs notebooks/01_oamp_memory_agent.ipynb
 uv run jupyter nbconvert --to notebook --execute \
   --output-dir /tmp/labs notebooks/02_skillbox_toolbox.ipynb
+uv run jupyter nbconvert --to notebook --execute \
+  --output-dir /tmp/labs notebooks/03_synthetic_memory_bootstrap.ipynb
 ```
 
-Everything the labs need is in this repository: setup scripts, the pinned Oracle AI Database container definition, the helper package, sample tools and skills, the three notebooks, the slide deck (`slides/agentic-memory-management.md`), and shared OCI Generative AI keys for the LLM cells (`.env.example`; they are rotated after the session, so no personal API key is needed).
+### Lab 3 — Meridian Bank (workshopwaitingroom.com)
+
+Lab 3 puts the day's patterns to work on Meridian Bank, a fictional bank whose data hides five seeded laundering patterns. It runs in its own repository, [jasperan-org/financial-fraud-agent-harness-workshop-lightweight](https://github.com/jasperan-org/financial-fraud-agent-harness-workshop-lightweight), on GitHub Codespaces only. Join first, then open the Codespace:
+
+1. Go to **<https://workshopwaitingroom.com>** and enter your GitHub username.
+2. Accept the invitation GitHub sends you: by email, or at <https://github.com/jasperan-org/financial-fraud-agent-harness-workshop-lightweight/invitations>.
+3. Open <https://github.com/jasperan-org/financial-fraud-agent-harness-workshop-lightweight>, click **Open in GitHub Codespaces** in its README, then **Create codespace**. Collaborators' Codespaces receive the LLM keys automatically. Created it before accepting the invitation? Stop and restart it, or create a new one: keys are injected only when a Codespace starts.
+4. Wait for the post-create step (about 5–8 minutes the first time: Oracle, the Meridian Bank data, the ONNX models).
+5. Open `notebook_student.ipynb` with the **Python 3.11** kernel and run from the top with the instructor.
+
+Your Lab 1–2 Codespace can keep running alongside it; stop it from <https://github.com/codespaces> when you are done to save your free Codespaces hours.
+
+Everything the labs need is in this repository: setup scripts, the pinned Oracle AI Database container definition, the helper package, sample tools and skills, the three notebooks, the slide deck (`slides/agentic-memory-management.pptx`, text version in `slides/agentic-memory-management.md`), and shared OCI Generative AI keys for the LLM cells (`.env.example`; they are rotated after the session, so no personal API key is needed).
 
 ## What You Build
 
-This package turns the live workshop into a reproducible attendee repo. You will run three labs:
+This package turns the live workshop into a reproducible attendee repo. You will run three notebooks here, then Lab 3 in the Meridian Bank repository:
 
 | Lab | Outcome |
 |---|---|
-| **Lab 1 — OAMP memory agent** | Create users, agents, memories, threads, automatic extraction, summaries, and `thread.get_context_card()`; then put that card into a real LLM turn through LiteLLM. |
-| **Mini-lab — Skillbox/toolbox** | Store tools and prose skills as vector-searchable Oracle rows; retrieve only top-k context per turn. |
-| **Lab 2 — Synthetic bootstrap** | Generate synthetic conversations, workflows, entities, knowledge snippets, skills, and tools; load them before the agent has real history. |
+| **Lab 1 — OAMP memory agent** (Module 3) | Create users, agents, memories, threads, automatic extraction, summaries, and `thread.get_context_card()`; then put that card into a real LLM turn through LiteLLM. |
+| **Mini-lab — Skillbox/toolbox** (Module 4) | Store tools and prose skills as vector-searchable Oracle rows; retrieve only top-k context per turn. |
+| **Lab 2 — Synthetic bootstrap** (Module 5) | Generate synthetic conversations, workflows, entities, knowledge snippets, skills, and tools; load them before the agent has real history. Certificate deliverable. |
+| **Lab 3 — Meridian Bank** | Investigate a fictional bank's seeded fraud patterns with a full agent harness (memory, retrieval, toolbox, skillbox). Join at [workshopwaitingroom.com](https://workshopwaitingroom.com); steps in [Lab 3](#lab-3--meridian-bank-workshopwaitingroomcom). |
 
 The final state is a memory-augmented agent stack with durable Oracle-backed memory and a bounded active context surface.
 
@@ -117,7 +134,7 @@ The scripts use Docker when its daemon is reachable, otherwise Podman, and honor
 
 Want a head start on the biggest download? The optional pre-pull is in [`PREWORK.md`](PREWORK.md#optional-save-time-before-the-session). It saves minutes, not correctness: skipping it is fine.
 
-## Live Setup (first 15 minutes)
+## Agenda
 
 | Clock | What happens |
 |---|---|
@@ -126,9 +143,10 @@ Want a head start on the biggest download? The optional pre-pull is in [`PREWORK
 | 11:45-12:25 | Module 2 — Designing an Agent Memory Architecture (concept) |
 | 12:25-12:35 | Break 1 + setup checkpoint: load the ONNX model, `uv run workshop-smoke-check --require-onnx` passes (it includes a live LLM call) |
 | 12:35-13:30 | Module 3 — Build a Memory-Augmented Agent (Lab 1) |
-| 13:30-13:40 | Break 2 |
-| 13:40-14:15 | Module 4 — Keep Context Bounded: skillbox / toolbox (concept + mini-lab) |
-| 14:15-14:50 | Module 5 — Bootstrap Memory with Synthetic Data (Lab 2) |
+| 13:30-14:05 | Module 4 — Keep Context Bounded: skillbox / toolbox (concept + mini-lab) |
+| 14:05-14:15 | Break 2 (pull-up point for anyone behind on Lab 1) |
+| 14:15-14:50 | Module 5 — Bootstrap Memory with Synthetic Data (Lab 2, certificate deliverable); continual learning |
+| after Lab 2 | Lab 3 — Meridian Bank, at [workshopwaitingroom.com](https://workshopwaitingroom.com) |
 | 14:50-15:00 | Wrap, Q&A, what's next |
 
 The checkpoint that matters is `uv run workshop-smoke-check --require-onnx`: it means the database, the HNSW vector memory pool, the ONNX embedder, the LLM, and the notebook imports are all live.
@@ -155,7 +173,8 @@ The checkpoint that matters is `uv run workshop-smoke-check --require-onnx`: it 
 | `scripts/load_onnx_model.py` | Loads `ALL_MINILM_L12_V2` into Oracle through `onnx2oracle` |
 | `scripts/synthesize_memory.py` | Lab 2 synthetic memory generator/loader |
 | `samples/` | Sample tools and skills for retrieval labs |
-| `slides/agentic-memory-management.md` | Marp-compatible workshop deck |
+| `slides/agentic-memory-management.pptx` | The workshop deck as presented |
+| `slides/agentic-memory-management.md` | Marp-compatible text version of the deck |
 
 ## Architecture
 
@@ -197,7 +216,7 @@ Oracle AI Database Free container (pinned release-26 image)
 - Lab 1 prints a non-empty or explainable `thread.get_context_card()`, sends it to the LLM, and proves the thread survives reconnect.
 - The mini-lab retrieves a small top-k tool/skill set instead of showing all schemas and playbooks.
 - Lab 2 writes `generated/synthetic_memory.json`, loads memory into OAMP, and retrieves synthetic context on the first turn.
-- `uv run workshop-smoke-check --require-onnx` passes before Module 4 starts.
+- `uv run workshop-smoke-check --require-onnx` passes at the Break 1 checkpoint, before Lab 1 starts.
 
 ## Runtime Notes
 

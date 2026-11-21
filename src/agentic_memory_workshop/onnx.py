@@ -7,8 +7,14 @@ import re
 from typing import Any
 
 import numpy as np
+import oracledb
 
 MODEL_NAME_RE = re.compile(r"^[A-Z][A-Z0-9_]{0,127}$")
+
+# ALL_MINILM_L12_V2 takes at most 512 tokens (510 plus CLS/SEP); a longer input fails
+# with ORA-54401 instead of being truncated. English runs about four characters per
+# token, so most text under this cap fits; denser text is halved until it does.
+MAX_EMBED_CHARS = 2000
 
 
 def oracle_model_name_from_preset(preset: str) -> str:
@@ -64,11 +70,22 @@ class OracleVectorEmbedder:
         self.model_name = validate_model_name(model_name or configured_model_name())
 
     def _embed_one(self, text: str) -> np.ndarray:
+        # OAMP embeds long inputs too: get_context_card() searches with the recent
+        # messages, which include whole LLM replies. Keep the leading part, as
+        # sentence-transformers does when it truncates.
+        text = str(text)[:MAX_EMBED_CHARS]
         cur = self.conn.cursor()
-        cur.execute(
-            f"SELECT VECTOR_EMBEDDING({self.model_name} USING :text AS DATA) FROM dual",
-            {"text": str(text)},
-        )
+        while True:
+            try:
+                cur.execute(
+                    f"SELECT VECTOR_EMBEDDING({self.model_name} USING :text AS DATA) FROM dual",
+                    {"text": text},
+                )
+                break
+            except oracledb.DatabaseError as exc:
+                if "ORA-54401" not in str(exc) or len(text) < 64:
+                    raise
+                text = text[: len(text) // 2]
         value = cur.fetchone()[0]
         return np.asarray(list(value), dtype=np.float32)
 
