@@ -24,7 +24,7 @@ Codespaces runs the whole workshop in the browser: no Docker, Python, or API key
    uv run workshop-smoke-check --require-onnx
    ```
 
-5. Open `notebooks/01_oamp_memory_agent.ipynb`. If VS Code asks for a kernel: **Select Kernel → Python Environments → .venv**. Run the cells in order. Notebooks `02` and `03` follow.
+5. Open `notebooks/01_oamp_memory_agent.ipynb` and click **Run All**: setup already installed VS Code's Python and Jupyter extensions and registered the notebooks' kernel, **Python (agentic-memory workshop)**. If VS Code still asks for a kernel, pick that one (or **Python Environments → .venv**). Notebooks `02` and `03` follow.
 
 Prefer Jupyter Lab? Run `uv run jupyter lab --no-browser --ip 0.0.0.0` in the terminal and open the forwarded port `8888`; the notebooks open on the **Python (agentic-memory workshop)** kernel.
 
