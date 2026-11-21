@@ -95,7 +95,7 @@ Lab 3 puts the day's patterns to work on Meridian Bank, a fictional bank whose d
 
 Your Lab 1–2 Codespace can keep running alongside it; stop it from <https://github.com/codespaces> when you are done to save your free Codespaces hours.
 
-Everything the labs need is in this repository: setup scripts, the pinned Oracle AI Database container definition, the helper package, sample tools and skills, the three notebooks, the slide deck (`slides/agentic-memory-management.pptx`, text version in `slides/agentic-memory-management.md`), and shared OCI Generative AI keys for the LLM cells (`.env.example`; they are rotated after the session, so no personal API key is needed).
+Everything the labs need is in this repository: setup scripts, the pinned Oracle AI Database container definition, the helper package, sample tools and skills, the three notebooks, the slide deck (`slides/agentic-memory-management.pdf`, text version in `slides/agentic-memory-management.md`), and shared OCI Generative AI keys for the LLM cells (`.env.example`; they are rotated after the session, so no personal API key is needed).
 
 ## What You Build
 
@@ -173,7 +173,7 @@ The checkpoint that matters is `uv run workshop-smoke-check --require-onnx`: it 
 | `scripts/load_onnx_model.py` | Loads `ALL_MINILM_L12_V2` into Oracle through `onnx2oracle` |
 | `scripts/synthesize_memory.py` | Lab 2 synthetic memory generator/loader |
 | `samples/` | Sample tools and skills for retrieval labs |
-| `slides/agentic-memory-management.pptx` | The workshop deck as presented |
+| `slides/agentic-memory-management.pdf` | The workshop deck as presented (PDF) |
 | `slides/agentic-memory-management.md` | Marp-compatible text version of the deck |
 
 ## Architecture
