@@ -142,7 +142,7 @@ Install Claude Code (<https://claude.com/claude-code>) or Codex, and sign in onc
 | 11:00 | Clone this repo and open it in Claude Code or Codex |
 | 11:02 | The agent runs `scripts/preflight.sh` and creates `.env` |
 | 11:05 | The agent starts `scripts/setup_oracle.sh` in the background; the image pull and first boot continue through Modules 1 and 2 |
-| 11:10 | The agent runs `uv sync --all-extras` while Oracle starts |
+| 11:10 | The agent runs `uv sync --all-extras` and `uv run workshop-kernel` while Oracle starts |
 | 11:15 | Module 1 starts; the database keeps warming up in the background |
 | 12:25 (Break 1) | Setup checkpoint: `uv run python scripts/load_onnx_model.py`, then `uv run workshop-smoke-check --require-onnx` |
 
@@ -181,7 +181,7 @@ cp .env.example .env
 scripts/setup_oracle.sh
 ```
 
-You can also run the rest of the runbook ahead of time (`uv sync --all-extras`, `uv run python scripts/load_onnx_model.py`, `uv run workshop-smoke-check --require-onnx`). The live session re-runs the same steps idempotently, and `setup_oracle.sh` never recreates a running container, so arriving with a warm environment is safe.
+You can also run the rest of the runbook ahead of time (`uv sync --all-extras`, `uv run workshop-kernel`, `uv run python scripts/load_onnx_model.py`, `uv run workshop-smoke-check --require-onnx`). The live session re-runs the same steps idempotently, and `setup_oracle.sh` never recreates a running container, so arriving with a warm environment is safe.
 
 ---
 

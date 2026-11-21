@@ -21,22 +21,63 @@
 
 ---
 
-## Get the Code
+## Get the Code and Run the Labs
 
-**Option A — GitHub Codespaces (nothing to install).** Click the button, then **Create codespace**. The Codespace installs the Python environment, starts Oracle AI Database, loads the ONNX model, and runs the readiness check on its own; the first build takes about 10 minutes, mostly the Oracle image download. See [`CODESPACES.md`](CODESPACES.md).
+Pick one path. Paste the commands one at a time, in order; a line ending in `\` continues on the next line, so paste both together.
+
+### Option A — GitHub Codespaces (nothing to install)
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/PacktPublishing/Build_Memory_Aware_AI_Agents)
 
-**Option B — your machine.**
+1. Click the button, keep the default 4-core machine, then **Create codespace**.
+2. Wait for creation, about 10 minutes the first time (mostly the Oracle image download). It installs the Python environment and the notebook kernel, starts Oracle AI Database, loads the ONNX model, and runs the readiness check. Follow it with Command Palette → **Codespaces: View Creation Log**; it ends with `All requested checks passed.`
+3. In the Codespace terminal, confirm:
+
+   ```bash
+   uv run workshop-smoke-check --require-onnx
+   ```
+
+4. Open `notebooks/01_oamp_memory_agent.ipynb`. If VS Code asks for a kernel: **Select Kernel → Python Environments → .venv**. Run the cells in order, then `02_skillbox_toolbox.ipynb` and `03_synthetic_memory_bootstrap.ipynb`.
+
+Details and the lifecycle scripts: [`CODESPACES.md`](CODESPACES.md).
+
+### Option B — your machine (Docker or Podman)
+
+You need a running Docker or Podman (8 GB of memory for containers), Python 3.10+, and `uv` (`curl -LsSf https://astral.sh/uv/install.sh | sh`). Install notes per OS: [`SETUP.md`](SETUP.md).
 
 ```bash
 git clone https://github.com/PacktPublishing/Build_Memory_Aware_AI_Agents.git
 cd Build_Memory_Aware_AI_Agents
+test -f .env || cp .env.example .env
+scripts/preflight.sh
+scripts/setup_oracle.sh
+uv sync --all-extras
+uv run workshop-kernel
+uv run python scripts/load_onnx_model.py
+uv run workshop-smoke-check --require-onnx
+uv run jupyter lab
 ```
 
-No git? Download the ZIP instead: <https://github.com/PacktPublishing/Build_Memory_Aware_AI_Agents/archive/refs/heads/main.zip>, unzip it, and `cd` into the folder. Then open the folder in Claude Code or Codex and ask:
+- Both Docker and Podman installed? Pin one first: `export CONTAINER_ENGINE=podman` (or `docker`).
+- `uv run workshop-kernel` registers the **Python (agentic-memory workshop)** kernel inside `.venv`. The notebooks ask for that kernel by name, so a stale `python3` kernel from another project cannot hijack them.
+- `setup_oracle.sh` takes 3–5 minutes on first boot; re-running any step is safe.
+- In Jupyter Lab, open `notebooks/01_oamp_memory_agent.ipynb`, `02_skillbox_toolbox.ipynb`, `03_synthetic_memory_bootstrap.ipynb` in order and run each top to bottom.
+
+No git? Download the ZIP instead: <https://github.com/PacktPublishing/Build_Memory_Aware_AI_Agents/archive/refs/heads/main.zip>, unzip it, and `cd` into the folder. Prefer not to type? Open the folder in Claude Code or Codex and ask:
 
 > Set up this workshop environment by following AGENTS.md.
+
+### Check the labs without opening Jupyter
+
+Runs notebooks 1 and 2 end to end and stops at the first failing cell (works locally and in the Codespace terminal):
+
+```bash
+mkdir -p /tmp/labs
+uv run jupyter nbconvert --to notebook --execute \
+  --output-dir /tmp/labs notebooks/01_oamp_memory_agent.ipynb
+uv run jupyter nbconvert --to notebook --execute \
+  --output-dir /tmp/labs notebooks/02_skillbox_toolbox.ipynb
+```
 
 Everything the labs need is in this repository: setup scripts, the pinned Oracle AI Database container definition, the helper package, sample tools and skills, the three notebooks, the slide deck (`slides/agentic-memory-management.md`), and shared OCI Generative AI keys for the LLM cells (`.env.example`; they are rotated after the session, so no personal API key is needed).
 
@@ -144,6 +185,7 @@ Oracle AI Database Free container (pinned release-26 image)
 | `scripts/preflight.sh` | Check Docker/Podman, compose, container memory, Python, uv, disk, `.env`, LLM configuration |
 | `CONTAINER_ENGINE=podman scripts/preflight.sh` | Force Podman when both engines are installed |
 | `scripts/setup_oracle.sh` | Start Oracle AI Database and wait for a healthy container |
+| `uv run workshop-kernel` | Register the notebooks' Jupyter kernel (`agentic-memory`) inside `.venv` |
 | `uv run python scripts/load_onnx_model.py` | Load the in-database embedding model |
 | `uv run workshop-smoke-check --offline` | Validate files without external services |
 | `uv run workshop-smoke-check --require-onnx` | Validate full workshop readiness, including a live LLM call |

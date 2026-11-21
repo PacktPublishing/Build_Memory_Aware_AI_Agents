@@ -45,6 +45,31 @@ def check_imports() -> bool:
     return ok
 
 
+def check_kernel() -> bool:
+    """The notebooks ask for the `agentic-memory` kernel; it must run this environment's Python."""
+
+    import sys
+
+    from .kernel import KERNEL_NAME
+
+    try:
+        from jupyter_client.kernelspec import KernelSpecManager, NoSuchKernel
+    except ImportError:
+        print("✗ Jupyter is not installed. Run: uv sync --all-extras")
+        return False
+    try:
+        argv0 = KernelSpecManager().get_kernel_spec(KERNEL_NAME).argv[0]
+    except NoSuchKernel:
+        argv0 = ""
+    # Same environment = same bin/ directory (python vs python3 differ by name only). No resolve():
+    # every venv's python symlinks to the same base interpreter.
+    ok = bool(argv0) and Path(argv0).absolute().parent == Path(sys.executable).absolute().parent
+    print(f"{_yes(ok)} Jupyter kernel '{KERNEL_NAME}' runs this environment's Python")
+    if not ok:
+        print("  Run: uv run workshop-kernel")
+    return ok
+
+
 def check_env() -> bool:
     settings = oracle_settings()
     env_ok = all([settings.user, settings.password, settings.dsn])
@@ -148,6 +173,7 @@ def main(argv: list[str] | None = None) -> int:
     if not args.offline:
         print("\nPython dependency checks:")
         ok = check_imports() and ok
+        ok = check_kernel() and ok
         print("\nEnvironment checks:")
         ok = check_env() and ok
         if not args.skip_llm:

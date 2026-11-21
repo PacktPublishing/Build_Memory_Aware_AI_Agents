@@ -16,6 +16,7 @@ This file captures the exact failure modes found while validating the workshop e
 | Keep `onnx2oracle>=0.1.1` unless PyPI publishes a newer compatible release. | The attempted `>=0.2.0` constraint was unsatisfiable during validation. |
 | Install `uv` with the official installer when system Python is externally managed. | Some Linux systems reject `python -m pip install --upgrade uv` under PEP 668. |
 | Use `uv sync --all-extras`, not plain `uv sync`. | Jupyter Lab, `ipykernel`, `pandas`, and `matplotlib` live in the `notebooks` extra; plain `uv sync` leaves `uv run jupyter lab` broken. |
+| Run the notebooks on the `agentic-memory` kernel (`uv run workshop-kernel`), not `python3`. | A `python3` kernelspec in the user's Jupyter directory (`~/Library/Jupyter/kernels` on macOS, `~/.local/share/jupyter/kernels` on Linux) outranks the one inside `.venv`. In the dry run it pointed at a deleted virtualenv and `nbconvert` failed with `No such file or directory: .../bin/python`. The notebooks now name `agentic-memory`, registered inside `.venv`, and the smoke check verifies it runs the `.venv` Python. |
 | Use `OAMP_EMBEDDER=oracle-db` for base labs. | The base workshop should not require an external embedding API. Embeddings run through Oracle `VECTOR_EMBEDDING` after ONNX load. |
 | Verify the LLM with a live call, not by looking for a `*_API_KEY`. | An unrelated key (another provider, another project) used to turn the readiness check green while Lab 1 skipped its LLM cells. `workshop-smoke-check` now calls `OAMP_LLM` once through `agentic_memory_workshop.llm`, the same path the notebooks use. |
 | Ship the shared OCI Generative AI keys in `.env.example`. | Attendees need no personal key. Six keys on Phoenix, six on Chicago; `llm.py` shuffles them per process and fails over on 401/403/404/429/5xx and network errors. The keys are rotated after the session. |
@@ -26,11 +27,12 @@ This file captures the exact failure modes found while validating the workshop e
 ## Correct startup path
 
 ```bash
-cp .env.example .env
+test -f .env || cp .env.example .env
 scripts/preflight.sh
 scripts/setup_oracle.sh
 command -v uv >/dev/null || curl -LsSf https://astral.sh/uv/install.sh | sh
 uv sync --all-extras
+uv run workshop-kernel
 uv run python scripts/load_onnx_model.py
 uv run workshop-smoke-check --require-onnx
 ```

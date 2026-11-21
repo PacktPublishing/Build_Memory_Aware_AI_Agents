@@ -244,14 +244,18 @@ If the image pull is slow, leave it running: the workshop continues through Modu
 
 ```bash
 uv sync --all-extras
+uv run workshop-kernel
 ```
 
 `--all-extras` installs the `notebooks` and `dev` extras: Jupyter Lab, `ipykernel`, `pandas`, `matplotlib`, `pytest`, and `ruff`. Plain `uv sync` does not install Jupyter, so `uv run jupyter lab` would fail.
+
+`uv run workshop-kernel` registers the Jupyter kernel the notebooks ask for, `agentic-memory` ("Python (agentic-memory workshop)"), inside `.venv`. Naming it avoids `python3`: a `python3` kernel in your user Jupyter directory, left by another project, outranks the one in `.venv` and would start the labs in the wrong Python (or in a deleted one). The smoke check verifies the kernel.
 
 Manual pip fallback:
 
 ```bash
 python3 -m pip install -e ".[notebooks,dev]"
+workshop-kernel
 ```
 
 ---
@@ -315,7 +319,17 @@ Run notebooks in order:
 2. `notebooks/02_skillbox_toolbox.ipynb`
 3. `notebooks/03_synthetic_memory_bootstrap.ipynb`
 
-Lab 1 ends with two LLM turns: turn 1 asks for three restaurant suggestions, and turn 2, `Book the first one you suggested`, only works because the thread context card carries those suggestions. If the LLM is not configured, that section skips with the reason and the rest of the lab still runs.
+The notebooks open on the **Python (agentic-memory workshop)** kernel. Lab 1 ends with two LLM turns: turn 1 asks for three restaurant suggestions, and turn 2, `Book the first one you suggested`, only works because the thread context card carries those suggestions. If the LLM is not configured, that section skips with the reason and the rest of the lab still runs.
+
+To run notebooks 1 and 2 end to end without opening Jupyter (stops at the first failing cell):
+
+```bash
+mkdir -p /tmp/labs
+uv run jupyter nbconvert --to notebook --execute \
+  --output-dir /tmp/labs notebooks/01_oamp_memory_agent.ipynb
+uv run jupyter nbconvert --to notebook --execute \
+  --output-dir /tmp/labs notebooks/02_skillbox_toolbox.ipynb
+```
 
 ---
 
@@ -361,3 +375,4 @@ If local Docker, Podman, or Python setup fails, use [`CODESPACES.md`](CODESPACES
 | Context card is empty | Add more messages, or run extraction with the LLM configured. |
 | `✗ LLM call` in the smoke check, or Lab 1 skips the LLM turns | The message names the cause. Compare the `OAMP_LLM` and `OCI_GENAI_*` lines in `.env` with `.env.example`, or set your own provider key. |
 | Notebook cannot see `.env` | Start Jupyter from the attendee repo root and run the notebooks in order. |
+| Kernel fails to start: `No such file or directory: .../bin/python`, or `No such kernel named agentic-memory` | Run `uv run workshop-kernel`, then restart Jupyter. |

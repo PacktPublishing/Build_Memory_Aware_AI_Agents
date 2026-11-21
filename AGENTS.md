@@ -74,10 +74,14 @@ notebook connections survive), starts a stopped one, and only waits for readines
 command -v uv >/dev/null || curl -LsSf https://astral.sh/uv/install.sh | sh
 export PATH="$HOME/.local/bin:$PATH"
 uv sync --all-extras
+uv run workshop-kernel
 ```
 
 `--all-extras` installs the `notebooks` and `dev` extras (Jupyter Lab, ipykernel, pandas,
 matplotlib, pytest, ruff). Plain `uv sync` does **not** install Jupyter.
+`uv run workshop-kernel` registers the `agentic-memory` Jupyter kernel inside `.venv`
+("Python (agentic-memory workshop)"); the notebooks ask for it by name, so a `python3`
+kernel left in the user's Jupyter directory by another project cannot take over.
 
 ## 6. Load the in-database ONNX model
 
@@ -125,6 +129,7 @@ Notebooks run in order: `01_oamp_memory_agent.ipynb`, `02_skillbox_toolbox.ipynb
 | `✗ LLM call` in the smoke check | The message names the cause (missing key for `OAMP_LLM`, or every key route failed). Check `.env` against `.env.example`; never print the keys. |
 | `externally-managed-environment` / PEP 668 on `pip install` | Install `uv` with the official installer (step 5) instead of `pip`. |
 | `jupyter: command not found` | Dependencies came from plain `uv sync`. Run `uv sync --all-extras`. |
+| `No such file or directory: .../bin/python` or `No such kernel named agentic-memory` when a notebook starts | The notebook kernel is not registered for this `.venv`. Run `uv run workshop-kernel`, then restart Jupyter. |
 
 Exact fixes and live-tested notes: `TROUBLESHOOTING.md`. Install links per OS:
 `SETUP.md`. Container-free path: `CODESPACES.md`.

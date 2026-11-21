@@ -18,6 +18,7 @@ if ! command -v uv >/dev/null 2>&1; then
 fi
 
 uv sync --all-extras
+uv run workshop-kernel
 uv run python scripts/load_onnx_model.py
 uv run workshop-smoke-check --require-onnx
 

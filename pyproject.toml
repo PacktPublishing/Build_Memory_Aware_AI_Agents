@@ -32,6 +32,7 @@ dev = [
 [project.scripts]
 synthesize-memory = "agentic_memory_workshop.synthesize_memory:main"
 workshop-smoke-check = "agentic_memory_workshop.smoke_check:main"
+workshop-kernel = "agentic_memory_workshop.kernel:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
