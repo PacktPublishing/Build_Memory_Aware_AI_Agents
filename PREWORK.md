@@ -115,7 +115,7 @@ uv --version
 
 ## 3. No LLM key needed
 
-The Lab 1 LLM turns and the OAMP extraction cells use `OAMP_LLM=openai/xai.grok-4.3` on OCI Generative AI. `.env.example` carries shared keys for the session (six on the Phoenix endpoint, six on Chicago as automatic failover); the setup copies it to `.env`, and the keys are rotated after the workshop.
+The Lab 1 LLM turns and the OAMP extraction cells use `OAMP_LLM=openai/xai.grok-4.3` on OCI Generative AI. `.env.example` carries shared keys for the session (three on the Phoenix endpoint, three on Chicago as automatic failover); the setup copies it to `.env`, and the keys are rotated after the workshop.
 
 To use your own provider instead, blank both `OCI_GENAI_*ENDPOINT` lines in `.env` and set `OAMP_LLM` plus its key:
 

@@ -29,7 +29,7 @@ test -f .env || cp .env.example .env
 
 Never overwrite an existing `.env`. `.env.example` ships shared OCI Generative AI keys
 for the session (rotated afterwards), so the attendee needs no personal key:
-`OAMP_LLM=openai/xai.grok-4.3`, six keys on the Phoenix endpoint, six on Chicago as
+`OAMP_LLM=openai/xai.grok-4.3`, three keys on the Phoenix endpoint, three on Chicago as
 failover. If the human wants their own provider instead, they blank both
 `OCI_GENAI_*ENDPOINT` lines and set `OAMP_LLM` plus the matching key (`gpt-4o-mini` with
 `OPENAI_API_KEY`, `anthropic/claude-...` with `ANTHROPIC_API_KEY`, `ollama/llama3.1`

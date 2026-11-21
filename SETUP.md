@@ -130,9 +130,9 @@ The LLM settings ship ready to use. `.env.example` carries shared OCI Generative
 ```text
 OAMP_LLM=openai/xai.grok-4.3
 OCI_GENAI_ENDPOINT=https://inference.generativeai.us-phoenix-1.oci.oraclecloud.com/openai/v1
-OCI_GENAI_API_KEY=...            # plus OCI_GENAI_API_KEY_2 .. _6
+OCI_GENAI_API_KEY=...            # plus OCI_GENAI_API_KEY_2, _3
 OCI_GENAI_FALLBACK_ENDPOINT=https://inference.generativeai.us-chicago-1.oci.oraclecloud.com/openai/v1
-OCI_GENAI_FALLBACK_API_KEY=...   # plus OCI_GENAI_FALLBACK_API_KEY_2 .. _6
+OCI_GENAI_FALLBACK_API_KEY=...   # plus OCI_GENAI_FALLBACK_API_KEY_2, _3
 ```
 
 `src/agentic_memory_workshop/llm.py` shuffles the keys per process so a full room spreads its load, and fails over to the next key (Phoenix first, then Chicago) when one is rate limited, rejected, or unreachable. The notebooks use it for the Lab 1 turns (`chat`) and for OAMP extraction and summaries (`oamp_llm()`).

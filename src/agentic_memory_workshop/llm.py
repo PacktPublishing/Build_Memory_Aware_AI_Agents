@@ -1,8 +1,8 @@
 """LLM access for the labs: one LiteLLM model string, an ordered list of endpoint/key routes.
 
-The workshop ships shared OCI Generative AI keys in `.env.example`: six keys on the primary
-endpoint (`OCI_GENAI_ENDPOINT`, Phoenix) and six on the fallback endpoint
-(`OCI_GENAI_FALLBACK_ENDPOINT`, Chicago). Both serve the same model through OCI's
+The workshop ships shared OCI Generative AI keys in `.env.example`: three keys on the primary
+endpoint (`OCI_GENAI_ENDPOINT`, Phoenix) and three on the fallback endpoint
+(`OCI_GENAI_FALLBACK_ENDPOINT`, Chicago); up to six per endpoint are read. Both serve the same model through OCI's
 OpenAI-compatible API, which is why `OAMP_LLM` carries the `openai/` prefix. Every process
 shuffles the keys within each endpoint so a full room spreads its load, and a route that is
 rate limited, rejected, missing the model, or unreachable fails over to the next one.

@@ -202,7 +202,7 @@ Oracle AI Database Free container (pinned release-26 image)
 ## Runtime Notes
 
 - OAMP base labs use `OAMP_EMBEDDER=oracle-db`, which routes embeddings through the in-database ONNX model after `scripts/load_onnx_model.py` runs.
-- The LLM is `OAMP_LLM=openai/xai.grok-4.3` on OCI Generative AI through its OpenAI-compatible API: six shared keys on the Phoenix endpoint, six on Chicago as automatic failover (`src/agentic_memory_workshop/llm.py`). To use your own provider instead, blank both `OCI_GENAI_*ENDPOINT` lines in `.env` and set `OAMP_LLM` plus its key (`gpt-4o-mini` with `OPENAI_API_KEY`, `anthropic/claude-...` with `ANTHROPIC_API_KEY`); the smoke check verifies the pair with a live call.
+- The LLM is `OAMP_LLM=openai/xai.grok-4.3` on OCI Generative AI through its OpenAI-compatible API: three shared keys on the Phoenix endpoint, three on Chicago as automatic failover (`src/agentic_memory_workshop/llm.py`). To use your own provider instead, blank both `OCI_GENAI_*ENDPOINT` lines in `.env` and set `OAMP_LLM` plus its key (`gpt-4o-mini` with `OPENAI_API_KEY`, `anthropic/claude-...` with `ANTHROPIC_API_KEY`); the smoke check verifies the pair with a live call.
 - `scripts/setup_oracle.sh` sizes Oracle's vector memory pool (`vector_memory_size=512M`, one restart on first setup), so HNSW vector indexes never fail with `ORA-51962`.
 - The toolbox/skillbox mini-lab uses Oracle `VECTOR_EMBEDDING(ALL_MINILM_L12_V2 ...)`. Load it with `scripts/load_onnx_model.py` before the session.
 - The synthetic generator is deterministic and offline by default; loading into Oracle is opt-in.
