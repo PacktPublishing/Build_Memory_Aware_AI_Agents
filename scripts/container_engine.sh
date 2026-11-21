@@ -54,14 +54,120 @@ ce_compose_available() {
   return 1
 }
 
+# ce_desktop_os — true on macOS and Windows shells, where containers run in a VM.
+ce_desktop_os() {
+  case "$(uname -s)" in
+    Darwin | MINGW* | MSYS* | CYGWIN*) return 0 ;;
+  esac
+  return 1
+}
+
+# ce_windows_virtualization_off — true on Windows when CPU virtualization is off in the firmware.
+# While a hypervisor runs, VirtualizationFirmwareEnabled reads False even though it is on,
+# so only "no hypervisor AND firmware flag False" proves it is off. Any error -> false.
+ce_windows_virtualization_off() {
+  case "$(uname -s)" in
+    MINGW* | MSYS* | CYGWIN*) ;;
+    *) return 1 ;;
+  esac
+  # powershell.exe is not always on Git Bash's PATH; fall back to its fixed location.
+  local ps="powershell.exe" root
+  if ! ce_installed "$ps"; then
+    root="${SYSTEMROOT:-${SystemRoot:-C:\\Windows}}"
+    command -v cygpath >/dev/null 2>&1 && root="$(cygpath -u "$root" 2>/dev/null || echo "$root")"
+    ps="$root/System32/WindowsPowerShell/v1.0/powershell.exe"
+    [ -x "$ps" ] || return 1
+  fi
+  local out
+  out="$("$ps" -NoProfile -NonInteractive -Command \
+    'Write-Output ([string](Get-CimInstance Win32_ComputerSystem).HypervisorPresent,[string](Get-CimInstance Win32_Processor | Select-Object -First 1).VirtualizationFirmwareEnabled -join [char]32)' \
+    2>/dev/null | tr -d '\r')" || return 1
+  [ "$out" = "False False" ]
+}
+
+# ce_virtualization_message — what to tell the user when virtualization is off.
+ce_virtualization_message() {
+  echo "CPU virtualization is off in the BIOS/UEFI; Docker Desktop and Podman need it (Intel VT-x / AMD SVM Mode). Enable it, reboot and rerun, or use Codespaces (CODESPACES.md)."
+}
+
+# ce_podman_machine_start — Podman is installed but not answering: start an existing,
+# stopped Podman machine (macOS/Windows). Returns 0 once `podman info` works, 1 otherwise.
+# Never creates a machine. Silent when there is none (Linux native podman, or not created yet).
+ce_podman_machine_start() {
+  local list line name running chosen="" chosen_running="" first="" first_running="" out status
+  list="$(podman machine list --format '{{.Name}} {{.Running}}' 2>/dev/null | tr -d '\r' || true)"
+  while read -r name running; do
+    [ -n "$name" ] || continue
+    if [ -z "$first" ]; then
+      first="$name"
+      first_running="$running"
+    fi
+    case "$name" in
+      *'*')
+        chosen="${name%\*}"
+        chosen_running="$running"
+        break
+        ;;
+    esac
+  done <<EOF
+$list
+EOF
+  if [ -z "$chosen" ]; then
+    chosen="${first%\*}"
+    chosen_running="$first_running"
+  fi
+  [ -n "$chosen" ] || return 1
+  # Already running yet `podman info` failed: starting again will not help.
+  [ "$chosen_running" = "true" ] && return 1
+
+  echo "Starting podman machine '$chosen' (once per boot, can take a minute)..." >&2
+  status=0
+  # wsl.exe writes UTF-16, so the output carries NUL bytes; keep it in a file and strip them.
+  local tmp
+  tmp="$(mktemp)"
+  podman machine start "$chosen" >"$tmp" 2>&1 || status=$?
+  out="$(tr -d '\000\r' <"$tmp")"
+  rm -f "$tmp"
+  if [ "$status" -ne 0 ]; then
+    local shown=0
+    while IFS= read -r line; do
+      line="$(printf '%s' "$line" | tr -d '\r')"
+      [ -n "${line//[[:space:]]/}" ] || continue
+      printf '  %s\n' "$line" >&2
+      shown=$((shown + 1))
+      [ "$shown" -lt 15 ] || break
+    done <<EOF
+$out
+EOF
+    return 1
+  fi
+  podman info >/dev/null 2>&1
+}
+
 # container_engine_hint <engine> — prints the install/start hint for that engine.
+# Engine "podman-compose" hints at the missing compose provider.
 container_engine_hint() {
   case "$1" in
     docker)
-      echo "Docker: install Docker Desktop (macOS/Windows) or Docker Engine + the compose plugin (Linux); start the daemon and rerun."
+      if ce_desktop_os; then
+        echo "Docker: install Docker Desktop, start it (the scripts never launch it) and wait until it says it is running, then rerun."
+      else
+        echo "Docker: install Docker Engine + the compose plugin; start the daemon and rerun."
+      fi
       ;;
     podman)
-      echo "Podman: on macOS/Windows run 'podman machine init --memory 8192 && podman machine start'; on Linux install podman plus podman-compose (or the docker-compose provider for 'podman compose')."
+      if ce_desktop_os; then
+        echo "Podman: create a machine once with 'podman machine init --memory 8192' and 'podman machine start' (the scripts start an existing stopped machine themselves)."
+      else
+        echo "Podman: install podman plus podman-compose (or the docker-compose provider for 'podman compose')."
+      fi
+      ;;
+    podman-compose)
+      if ce_desktop_os; then
+        echo "Podman compose: Podman Desktop > Settings > Resources > Compose > Setup, or: uv tool install podman-compose"
+      else
+        echo "Podman compose: install podman-compose (or the docker-compose provider for 'podman compose')."
+      fi
       ;;
   esac
 }
@@ -88,7 +194,12 @@ container_engine_detect() {
 
   for engine in "${candidates[@]}"; do
     if ! ce_daemon_ready "$engine"; then
-      continue
+      # A stopped Podman machine (macOS/Windows) is started here, once per boot.
+      if [ "$engine" = podman ] && ce_installed podman && ce_podman_machine_start; then
+        :
+      else
+        continue
+      fi
     fi
     if ! ce_compose_available "$engine"; then
       continue

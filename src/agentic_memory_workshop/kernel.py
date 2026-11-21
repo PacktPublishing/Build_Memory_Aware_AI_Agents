@@ -10,11 +10,14 @@ from __future__ import annotations
 
 import sys
 
+from . import use_utf8_output
+
 KERNEL_NAME = "agentic-memory"
 DISPLAY_NAME = "Python (agentic-memory workshop)"
 
 
 def main() -> int:
+    use_utf8_output()
     from ipykernel.kernelspec import install
 
     path = install(kernel_name=KERNEL_NAME, display_name=DISPLAY_NAME, prefix=sys.prefix)

@@ -10,13 +10,13 @@ For the local path the pre-session list is short. Install the first three items,
 | # | Requirement | Check |
 |---|---|---|
 | 1 | Docker **or** Podman, with 8 GB of memory for containers | `docker info` or `podman info` |
-| 2 | Python 3.10+ (3.12 recommended) | `python3 --version` |
+| 2 | Python 3.11-3.13 (3.12 recommended); `uv` downloads one if none matches | `uv python find --show-version` |
 | 3 | A coding agent such as Claude Code or Codex | `claude --version` or `codex --version` |
 | 4 | At least 20 GB free disk | `df -h .` (the Oracle image is about a 4 GB download, about 14 GB on disk) |
 
 No LLM API key is needed: the repo ships shared OCI Generative AI keys for the session. Jupyter is **not** on that list either: `uv sync --all-extras` installs it with the rest of the notebook dependencies. You do not need Oracle DBA experience, and you do not need to install `oracleagentmemory` or `litellm` by hand.
 
-If any of this fails on your machine, use Codespaces so you can still take part.
+If any of this fails on your machine, use Codespaces so you can still take part. The backup repository <https://github.com/jasperan-org/build-memory-aware-ai-agents> is the same workshop ready in Codespaces: ask the instructor to add you as a collaborator, accept the invitation, then create the Codespace (details in [`CODESPACES.md`](CODESPACES.md)).
 
 ---
 
@@ -48,7 +48,11 @@ The default machine disk is usually large enough; 40 GB leaves room for the imag
 
 ### Windows
 
-Docker Desktop: enable WSL2, install from <https://docs.docker.com/desktop/install/windows-install/>, and turn on WSL integration for your Ubuntu distro. Run every workshop command from the **WSL terminal**, not PowerShell.
+Run the workshop scripts from **Git Bash** (installed with Git for Windows); a WSL2 terminal also works.
+
+CPU virtualization must be on: Task Manager > Performance > CPU shows "Virtualization: Enabled". If it says Disabled, enable Intel VT-x / AMD SVM Mode in the BIOS/UEFI. Containers get their memory from WSL2 (half of RAM by default); to give them 8 GB put `memory=8GB` under `[wsl2]` in `%UserProfile%\.wslconfig`, then run `wsl --shutdown`.
+
+Docker Desktop (WSL2 backend): install from <https://docs.docker.com/desktop/install/windows-install/>. Start it before the session; the scripts never launch Docker Desktop.
 
 ```bash
 docker --version
@@ -56,13 +60,15 @@ docker compose version
 docker info
 ```
 
-Podman Desktop works too, with the same sizing, from a WSL terminal:
+Podman Desktop or the `podman` CLI with a WSL machine works too. Create the machine once (Podman Desktop's onboarding does this for you); after a reboot the scripts start the machine themselves, but never create one:
 
 ```bash
 podman machine init --memory 8192 --disk-size 40
 podman machine start
 podman info
 ```
+
+Compose provider for Podman: Podman Desktop > Settings > Resources > Compose > Setup, or `uv tool install podman-compose`.
 
 ### Ubuntu / Debian — Docker Engine
 
@@ -93,13 +99,15 @@ Podman is rootless by default. On an SELinux host (Fedora, RHEL, CentOS), the co
 
 ---
 
-## 2. Install Python 3.10+ and uv
+## 2. Python 3.11-3.13 and uv
 
-Python 3.10 or newer is required; 3.12 is recommended.
+Python 3.11 to 3.13 is required; 3.12 is recommended. You do not have to install it: when no matching Python is found, `uv` downloads one. To see which interpreter `uv` would use:
 
 ```bash
-python3 --version
+uv python find --show-version
 ```
+
+On Windows, `python3`/`python` on `PATH` are often Microsoft Store aliases that only print "Python was not found"; that does not matter, `uv` does not use them.
 
 `uv` can be installed now or by the coding agent during the session:
 
@@ -108,6 +116,8 @@ command -v uv >/dev/null || curl -LsSf https://astral.sh/uv/install.sh | sh
 export PATH="$HOME/.local/bin:$PATH"
 uv --version
 ```
+
+The same `curl` installer works in Git Bash. PowerShell alternative: `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`.
 
 `uv` manages the project environment, so you do not need a virtualenv or a system-wide `pip install`.
 

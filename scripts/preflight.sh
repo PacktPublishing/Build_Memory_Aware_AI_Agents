@@ -20,49 +20,78 @@ printf '========================================================\n\n'
 case "$(uname -s)" in
   Darwin) ok "macOS detected (Docker Desktop or Podman machine)" ;;
   Linux) ok "Linux detected" ;;
-  MINGW*|MSYS*|CYGWIN*) warn "Windows shell detected; run the workshop from a WSL2 terminal with Docker Desktop or Podman Desktop" ;;
+  MINGW*|MSYS*|CYGWIN*) ok "Windows detected (Git Bash); containers run in Docker Desktop or a Podman machine on WSL2" ;;
   *) warn "Unknown OS: $(uname -s)" ;;
 esac
 
-if command -v python3 >/dev/null 2>&1; then
-  ok "python3 installed: $(python3 --version 2>&1 | head -1)"
-  if python3 -c 'import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)'; then
-    ok "python3 is 3.10 or newer"
+if command -v uv >/dev/null 2>&1; then
+  ok "uv installed: $(uv --version | tr -d '\r')"
+  # uv installs and runs the project's Python (requires-python in pyproject.toml), so a system
+  # python3 is optional. On Windows a python3 on PATH is often a Microsoft Store alias and proves nothing.
+  if py_version="$(uv python find --show-version 2>/dev/null | tr -d '\r')" && [ -n "$py_version" ]; then
+    py_path="$(uv python find 2>/dev/null | tr -d '\r' || true)"
+    ok "Python for the workshop: $py_version (${py_path:-path unknown})"
   else
-    bad "python3 is older than 3.10; install Python 3.10+ (3.12 recommended)"
+    warn "no installed Python matches requires-python in pyproject.toml; 'uv sync' downloads a matching one automatically"
   fi
 else
-  bad "python3 is not installed"
+  warn "uv missing; install with: curl -LsSf https://astral.sh/uv/install.sh | sh (works in Git Bash too; Windows PowerShell: powershell -c \"irm https://astral.sh/uv/install.ps1 | iex\")"
 fi
 
-if command -v uv >/dev/null 2>&1; then ok "uv installed: $(uv --version)"; else warn "uv missing; install with: curl -LsSf https://astral.sh/uv/install.sh | sh"; fi
-
 printf '\nContainer engine:\n'
+# Detection first: it may start a stopped Podman machine. The per-engine lines below
+# only observe, so keep the detected selection and restore it afterwards.
+requested_engine="${CONTAINER_ENGINE:-}"
+selected_engine=""
+selected_compose=()
+if container_engine_detect; then
+  selected_engine="$CONTAINER_ENGINE"
+  selected_compose=("${COMPOSE_CMD[@]}")
+fi
+
 for engine in docker podman; do
   if ce_installed "$engine"; then
-    ok "$engine installed: $("$engine" --version 2>&1 | head -1)"
+    ok "$engine installed: $("$engine" --version 2>&1 | head -1 | tr -d '\r')"
     if ce_daemon_ready "$engine"; then
       ok "$engine daemon is reachable"
+      if ce_compose_available "$engine"; then
+        ok "$engine compose available: ${COMPOSE_CMD[*]}"
+        if [ "$engine" = podman ] && ! ce_podman_socket_running && [ "${COMPOSE_CMD[0]}" = podman ]; then
+          warn "podman API socket is not running; 'podman compose' needs it: systemctl --user start podman.socket"
+        fi
+      elif [ "$engine" = podman ]; then
+        warn "podman has no compose provider"
+        container_engine_hint podman-compose
+      else
+        warn "docker compose is not available; install the compose plugin, see SETUP.md step 2"
+      fi
     elif [ "$engine" = podman ]; then
-      warn "podman is installed but not running; on macOS/Windows run: podman machine init --memory 8192 && podman machine start"
-    else
-      warn "docker is installed but the daemon is not running/reachable"
-    fi
-    if ce_compose_available "$engine"; then
-      ok "$engine compose available: ${COMPOSE_CMD[*]}"
-      if [ "$engine" = podman ] && ! ce_podman_socket_running && [ "${COMPOSE_CMD[0]}" = podman ]; then
-        warn "podman API socket is not running; 'podman compose' needs it: systemctl --user start podman.socket"
+      if ce_desktop_os; then
+        machines="$(podman machine list --format '{{.Name}}' 2>/dev/null | tr -d '\r' || true)"
+        if [ -n "$machines" ]; then
+          warn "podman is installed but its machine is not running (or failed to start, see above); start it with: podman machine start"
+        else
+          warn "podman is installed but no podman machine exists yet"
+          container_engine_hint podman
+        fi
+      else
+        warn "podman is installed but 'podman info' fails; check the podman service/socket"
       fi
     else
-      warn "$engine compose is not available; install the compose plugin (Docker) or podman-compose (Podman), see SETUP.md step 2"
+      warn "docker is installed but the daemon is not running/reachable"
+      if ce_desktop_os; then container_engine_hint docker; fi
     fi
   else
     warn "$engine is not installed"
   fi
 done
 
-requested_engine="${CONTAINER_ENGINE:-}"
-if container_engine_detect; then
+# Restore the selection the per-engine checks above may have overwritten.
+CONTAINER_ENGINE="$selected_engine"
+COMPOSE_CMD=()
+if [ -n "$selected_engine" ]; then
+  export CONTAINER_ENGINE
+  COMPOSE_CMD=("${selected_compose[@]}")
   ok "using container engine: $CONTAINER_ENGINE (compose: ${COMPOSE_CMD[*]})"
   if [ -n "$requested_engine" ]; then
     ok "engine pinned by CONTAINER_ENGINE=$requested_engine"
@@ -70,16 +99,32 @@ if container_engine_detect; then
 else
   bad "no usable container engine; install Docker or Podman (see SETUP.md step 2)"
   container_engine_hint docker
-  container_engine_hint podman
+  if ce_installed podman && ce_daemon_ready podman; then
+    container_engine_hint podman-compose
+  else
+    container_engine_hint podman
+  fi
+  if ce_windows_virtualization_off; then
+    bad "$(ce_virtualization_message)"
+  fi
 fi
 
 free_kb=0
 if command -v df >/dev/null 2>&1; then
-  free_kb=$(df -Pk . | awk 'NR==2 {print $4}')
+  disk_target=.
+  disk_where="in this filesystem"
+  case "$(uname -s)" in
+    MINGW*|MSYS*|CYGWIN*)
+      # Docker Desktop and Podman keep their WSL disks under the user profile.
+      disk_target="$HOME"
+      disk_where="on the drive of your user profile ($HOME), where Docker Desktop and Podman keep their WSL disks"
+      ;;
+  esac
+  free_kb=$(df -Pk "$disk_target" | awk 'NR==2 {print $4}')
   if [ "${free_kb:-0}" -ge 20971520 ]; then
-    ok "disk free >= 20 GB"
+    ok "disk free >= 20 GB $disk_where"
   else
-    warn "less than 20 GB free in this filesystem; the Oracle image is about 14 GB on disk (about 4 GB download) plus datafiles and the Python environment"
+    warn "less than 20 GB free $disk_where; the Oracle image is about 14 GB on disk (about 4 GB download) plus datafiles and the Python environment"
   fi
 fi
 
@@ -95,7 +140,14 @@ if [ -n "${CONTAINER_ENGINE:-}" ]; then
   if [ "$engine_mem_gb" -ge 6 ]; then
     ok "$CONTAINER_ENGINE has ${engine_mem_gb} GB of memory for containers"
   else
-    warn "$CONTAINER_ENGINE has only ${engine_mem_gb} GB for containers; Oracle needs about 2 GB plus headroom, give it 8 GB (podman machine set --memory 8192, or Docker Desktop > Resources) or use Codespaces"
+    case "$(uname -s)" in
+      MINGW*|MSYS*|CYGWIN*)
+        warn "$CONTAINER_ENGINE has only ${engine_mem_gb} GB for containers; on Windows both engines get their memory from WSL2 (half of the RAM by default): put memory=8GB under [wsl2] in %UserProfile%\\.wslconfig, run: wsl --shutdown, then restart the engine (or use Codespaces)"
+        ;;
+      *)
+        warn "$CONTAINER_ENGINE has only ${engine_mem_gb} GB for containers; Oracle needs about 2 GB plus headroom, give it 8 GB (podman machine set --memory 8192, or Docker Desktop > Resources) or use Codespaces"
+        ;;
+    esac
   fi
 fi
 

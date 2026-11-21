@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.10+" />
+  <img src="https://img.shields.io/badge/Python-3.11--3.13-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.11-3.13" />
   <img src="https://img.shields.io/badge/Oracle_AI_Database-Free-F80000?style=for-the-badge&logo=oracle&logoColor=white" alt="Oracle AI Database Free" />
   <img src="https://img.shields.io/badge/OAMP-oracleagentmemory-7B61FF?style=for-the-badge" alt="OAMP" />
   <img src="https://img.shields.io/badge/ONNX-in--database-005CED?style=for-the-badge&logo=onnx&logoColor=white" alt="ONNX" />
@@ -27,6 +27,15 @@ Pick one path. Paste the commands one at a time, in order; a line ending in `\` 
 
 The session runs the notebooks in this order: **Lab 1** (`01_oamp_memory_agent.ipynb`, Module 3), the **Module 4 mini-lab** (`02_skillbox_toolbox.ipynb`) and **Lab 2** (`03_synthetic_memory_bootstrap.ipynb`, Module 5). **Lab 3**, the Meridian Bank fraud case, lives in a separate repository you join through [workshopwaitingroom.com](https://workshopwaitingroom.com): see [Lab 3](#lab-3--meridian-bank-workshopwaitingroomcom).
 
+> **Local setup failing on the day?** Use the Codespaces backup repository: the same workshop, ready in GitHub Codespaces.
+>
+> 1. Ask the instructor to add you as a collaborator (write access) of <https://github.com/jasperan-org/build-memory-aware-ai-agents>.
+> 2. Accept the invitation: the email from GitHub, or <https://github.com/jasperan-org/build-memory-aware-ai-agents/invitations>.
+> 3. Create the Codespace: [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/jasperan-org/build-memory-aware-ai-agents)
+> 4. Created it before accepting? Stop the Codespace and start it again: the shared OCI Generative AI keys are injected as Codespaces secrets at start.
+>
+> Without an invitation you can still use the Packt repository's own Codespaces button below (your own GitHub account pays).
+
 ### Option A — GitHub Codespaces (nothing to install)
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/PacktPublishing/Build_Memory_Aware_AI_Agents)
@@ -45,7 +54,7 @@ Details and the lifecycle scripts: [`CODESPACES.md`](CODESPACES.md).
 
 ### Option B — your machine (Docker or Podman)
 
-You need a running Docker or Podman (8 GB of memory for containers), Python 3.10+, and `uv` (`curl -LsSf https://astral.sh/uv/install.sh | sh`). Install notes per OS: [`SETUP.md`](SETUP.md).
+You need a running Docker or Podman (8 GB of memory for containers), Python 3.11-3.13 (`uv` downloads a matching Python when none is installed), and `uv` (`curl -LsSf https://astral.sh/uv/install.sh | sh`; on Windows run it in Git Bash, or in PowerShell: `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`). On Windows run the scripts from Git Bash (installed with Git for Windows); a WSL2 terminal also works. Install notes per OS: [`SETUP.md`](SETUP.md).
 
 ```bash
 git clone https://github.com/PacktPublishing/Build_Memory_Aware_AI_Agents.git
@@ -117,7 +126,7 @@ The environment is set up **during** the live session, in the first 15 minutes. 
 | Item | Why |
 |---|---|
 | Docker **or** Podman installed (daemon startable, 8 GB of memory for containers) | Runs Oracle AI Database Free locally |
-| Python 3.10+ (3.12 recommended) | Runs the labs; Jupyter comes from `uv sync` |
+| Python 3.11-3.13 (3.12 recommended; `uv` downloads one if missing) | Runs the labs; Jupyter comes from `uv sync` |
 | A coding agent such as Claude Code or Codex | Runs the setup for you with this repo's `AGENTS.md` instead of you typing commands |
 
 No LLM API key is needed: `.env.example` carries shared OCI Generative AI keys for the session.
@@ -128,7 +137,8 @@ You do not need Oracle DBA experience, and you do not need to install anything d
 
 The scripts use Docker when its daemon is reachable, otherwise Podman, and honor `CONTAINER_ENGINE=docker|podman`.
 
-- macOS/Windows Podman: `podman machine init --memory 8192 --disk-size 40` once (Oracle AI Database Free needs the RAM and the image needs disk), then `podman machine start`.
+- macOS/Windows Podman: `podman machine init --memory 8192 --disk-size 40` once (Oracle AI Database Free needs the RAM and the image needs disk; Podman Desktop's onboarding does it too). If the machine is stopped, the scripts start it; they never create one. On Windows the Podman compose provider is set in Podman Desktop > Settings > Resources > Compose > Setup, or with `uv tool install podman-compose`.
+- Windows: CPU virtualization must be on (Task Manager > Performance > CPU shows "Virtualization: Enabled"); otherwise enable Intel VT-x / AMD SVM Mode in the BIOS/UEFI. Docker Desktop and Podman get their memory from WSL2 (see [`SETUP.md`](SETUP.md)).
 - Linux Podman: `sudo apt-get install -y podman podman-compose`, or install a compose provider for `podman compose`. Compose resolution is `docker compose`, then `podman compose`, then `podman-compose`.
 - SELinux hosts (Fedora, RHEL, CentOS): a rootless Podman container cannot read the bind-mounted init scripts until you run `chcon -Rt container_file_t sql` from the repo root.
 

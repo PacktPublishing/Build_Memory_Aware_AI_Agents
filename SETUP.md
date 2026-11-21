@@ -18,7 +18,7 @@ That proves:
 
 - Docker **or** Podman is working, with a compose command.
 - Oracle AI Database Free is running and reachable.
-- Python dependencies are installed.
+- Python dependencies are installed (Python 3.11-3.13).
 - OAMP imports correctly.
 - `onnx2oracle` is installed.
 - `OAMP_LLM` answers a live call with the configured keys.
@@ -55,21 +55,29 @@ podman compose version    # falls back to podman-compose if installed
 
 `podman machine init` is a one-time step; after a reboot run `podman machine start` before the workshop scripts.
 
+### Windows — prerequisites
+
+Run the workshop scripts from **Git Bash** (installed with Git for Windows); a WSL2 terminal also works.
+
+- CPU virtualization must be on. Task Manager > Performance > CPU shows "Virtualization: Enabled"; if not, enable Intel VT-x / AMD SVM Mode in the BIOS/UEFI.
+- Both engines get their memory from WSL2 (half of RAM by default). To give containers 8 GB, put `memory=8GB` under `[wsl2]` in `%UserProfile%\.wslconfig`, then run `wsl --shutdown`.
+- `uv`: in Git Bash `curl -LsSf https://astral.sh/uv/install.sh | sh`; in PowerShell `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`.
+
 ### Windows — Docker
 
-Use WSL2 + Docker Desktop: <https://docs.docker.com/desktop/install/windows-install/>
-
-Turn on WSL integration for your Ubuntu distro and run every workshop command inside the **WSL terminal**, not PowerShell. Verify with `docker --version`, `docker compose version`, `docker info`.
+Use Docker Desktop with the WSL2 backend: <https://docs.docker.com/desktop/install/windows-install/>. Start Docker Desktop before the session (the scripts never launch it). Verify with `docker --version`, `docker compose version`, `docker info`.
 
 ### Windows — Podman
 
-Install Podman Desktop or the `podman` CLI inside WSL2, create the machine with the same sizing, and start it:
+Install Podman Desktop or the `podman` CLI with a WSL machine. Create the machine once (Podman Desktop's onboarding does it, or run this) and start it:
 
 ```bash
 podman machine init --memory 8192 --disk-size 40
 podman machine start
 podman info
 ```
+
+After a reboot the scripts start the existing machine themselves; they never run `podman machine init`. Compose provider: Podman Desktop > Settings > Resources > Compose > Setup, or `uv tool install podman-compose`.
 
 ### Ubuntu / Debian — Docker Engine
 
@@ -165,6 +173,10 @@ To use your own provider instead of the shared keys, blank both `OCI_GENAI_*ENDP
 
 1. Honors `CONTAINER_ENGINE=docker|podman` when set.
 2. Otherwise prefers Docker if `docker info` succeeds, then Podman if `podman info` succeeds.
+   If Podman is installed but `podman info` fails, it starts an existing stopped Podman machine
+   (the one marked default, else the first listed) and shows the start error if that fails. It
+   never creates a machine (`podman machine init` stays a one-time manual step), never launches
+   Docker Desktop, and never changes Windows features.
 3. Resolves compose as `docker compose`, then `podman compose`, then `podman-compose`.
    `podman compose` normally delegates to docker-compose, which talks to the Podman API
    socket, so the scripts only prefer it when that socket is up; otherwise they fall back
@@ -196,9 +208,11 @@ The preflight checks:
 |---|---|
 | Docker and Podman availability, daemon, compose | Required for the local Oracle AI Database |
 | Selected engine | Shows which engine and compose command the other scripts will use |
-| Python 3.10+ and uv | Required for package and notebook dependencies |
-| Disk | At least 20 GB free: the 14 GB image on disk plus datafiles and the Python environment |
-| Container engine memory | What Docker Desktop, Colima, or the Podman machine gives containers (not the host RAM); warns below 6 GB, 8 GB recommended |
+| Python 3.11-3.13 via uv | Prints the interpreter `uv python find` picks, or warns that `uv sync` will download one. No `python3` check: uv provisions the project Python |
+| Windows (Git Bash) | Reported as an ok line, not a warning |
+| Virtualization (Windows) | When no engine works and Windows reports no hypervisor with virtualization disabled in firmware, says to enable Intel VT-x / AMD SVM Mode in the BIOS/UEFI and points to Codespaces |
+| Disk | At least 20 GB free: the 14 GB image on disk plus datafiles and the Python environment. On Windows it checks the user-profile drive (`$HOME`), where Docker Desktop and Podman keep their WSL disks |
+| Container engine memory | What Docker Desktop, Colima, or the Podman machine gives containers (not the host RAM); warns below 6 GB, 8 GB recommended. On Windows both engines use WSL2: `memory=8GB` under `[wsl2]` in `%UserProfile%\.wslconfig`, then `wsl --shutdown` |
 | `.env` | Keeps DB/model settings consistent |
 | `OAMP_LLM` and its credentials | Shared OCI keys present, or a reminder to set your own provider key; the smoke check makes the live call |
 | Oracle image presence | Warns if the first startup will need a large download |
@@ -254,9 +268,11 @@ uv run workshop-kernel
 Manual pip fallback:
 
 ```bash
-python3 -m pip install -e ".[notebooks,dev]"
+python3 -m pip install -e ".[notebooks,dev]"    # Windows: py -3.12 -m pip install -e ".[notebooks,dev]"
 workshop-kernel
 ```
+
+The Python must be 3.11-3.13.
 
 ---
 
@@ -360,7 +376,11 @@ If local Docker, Podman, or Python setup fails, use [`CODESPACES.md`](CODESPACES
 | `docker: command not found` / `podman: command not found` | Install either engine from step 1. |
 | `Cannot connect to the Docker daemon` | Start Docker Desktop/Engine; on Linux, ensure your user is in the `docker` group. |
 | `docker compose` missing | Upgrade Docker Desktop or install the Compose v2 plugin. |
-| `podman info` fails on macOS/Windows | `podman machine init --memory 8192` once, then `podman machine start`. |
+| `podman info` fails on macOS/Windows | `podman machine init --memory 8192` once, then `podman machine start`. If a machine already exists the scripts start it; if the start fails, the error is shown. |
+| Windows: Podman machine start fails, or "CPU virtualization is off" | Enable Intel VT-x / AMD SVM Mode in the BIOS/UEFI (Task Manager > Performance > CPU must show "Virtualization: Enabled"), or use Codespaces. |
+| Windows: `python3` prints "Python was not found" | Microsoft Store alias; ignore it. `uv` downloads a matching Python 3.11-3.13. |
+| Windows: `uv sync` fails with "Access is denied" and leaves `.venv` partial | A Jupyter kernel from `.venv` (for example a notebook open in VS Code) locks its `.pyd` files. Stop the kernel or close the notebook, then rerun `uv sync --all-extras`. |
+| Windows: `$'\r': command not found` when a script runs in WSL or a container | The checkout predates `.gitattributes` and has CRLF line endings (Git Bash itself tolerates them). Clone the repository again: `.gitattributes` keeps `.sh` and `.sql` files LF. |
 | `podman compose` missing on Linux | `sudo apt-get install -y podman-compose` (or install the docker-compose provider). |
 | `podman compose` fails with `dial unix /run/user/.../podman.sock` | The docker-compose provider needs the Podman API socket: `systemctl --user start podman.socket` (Linux), then rerun. Installing `podman-compose` also works and the scripts then prefer it. |
 | Oracle cannot read its init script under Podman on SELinux | `chcon -Rt container_file_t sql` from the repo root, then recreate the container. |
@@ -368,7 +388,7 @@ If local Docker, Podman, or Python setup fails, use [`CODESPACES.md`](CODESPACES
 | `Wrong Oracle container image` | The container runs a different image. Remove the volume and rerun `scripts/setup_oracle.sh`. |
 | `ORA-01017` invalid username/password | Stale volume from an earlier image: remove it with `docker compose down -v` (or `podman compose down -v`), then run `scripts/setup_oracle.sh`. |
 | Host port 1526 already taken | Set `ORACLE_HOST_PORT=1527` and `DB_CONNECT_STRING=localhost:1527/FREEPDB1` in `.env`, then rerun. Change it in `.env`: `podman-compose` substitutes from that file even when the shell exports a different value. |
-| OAMP import fails | Run `uv sync --all-extras` or `python3 -m pip install -e ".[notebooks,dev]"`. |
+| OAMP import fails | Run `uv sync --all-extras` or `python3 -m pip install -e ".[notebooks,dev]"` (Python 3.11-3.13). |
 | `onnx2oracle` command missing | Run `uv sync --all-extras`; it is a project dependency. Current package metadata allows the published embedding-loader release (`>=0.1.1`). |
 | `CREATE MINING MODEL` denied | Recreate the container with the provided init SQL or grant `CREATE MINING MODEL` to `VECTOR`. |
 | `ALL_MINILM_L12_V2` missing | Run `uv run python scripts/load_onnx_model.py`. |

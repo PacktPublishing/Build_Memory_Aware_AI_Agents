@@ -16,7 +16,7 @@ that deletes data. Inside a GitHub Codespace, steps 2-7 already ran during creat
 scripts/preflight.sh
 ```
 
-Checks Python 3.10+, `uv`, Docker or Podman (daemon plus compose), disk (warns below
+Checks `uv` (and prints the Python it will use: 3.11-3.13, downloaded by `uv` when none is installed), Docker or Podman (daemon plus compose), disk (warns below
 20 GB free), the memory the container engine has (warns below 6 GB), the LLM settings in
 `.env`, and whether the pinned Oracle image is already pulled. It exits non-zero only on
 hard failures; warnings can wait.
@@ -44,8 +44,14 @@ CONTAINER_ENGINE=podman scripts/preflight.sh
 ```
 
 Compose resolution order is `docker compose`, then `podman compose`, then
-`podman-compose`. On macOS and Windows, Podman needs a running VM: one time
-`podman machine init --memory 8192`, then `podman machine start`.
+`podman-compose`. On macOS and Windows, Podman needs a VM: one time
+`podman machine init --memory 8192` (a manual step; the scripts never create a
+machine). If the machine exists but is stopped, the scripts start it. They never
+launch Docker Desktop. On Windows run everything from Git Bash (or WSL2); CPU
+virtualization must be enabled in the BIOS/UEFI (Intel VT-x / AMD SVM Mode), and the
+engine's memory comes from WSL2 (`memory=8GB` under `[wsl2]` in
+`%UserProfile%\.wslconfig`, then `wsl --shutdown`). For Podman, the compose provider is
+Podman Desktop > Settings > Resources > Compose > Setup, or `uv tool install podman-compose`.
 
 ## 4. Start Oracle AI Database
 
@@ -120,6 +126,9 @@ Notebooks run in order: `01_oamp_memory_agent.ipynb`, `02_skillbox_toolbox.ipynb
 
 | Symptom | Action |
 |---|---|
+| Windows: "CPU virtualization is off" or Podman machine start fails | Tell the human to enable Intel VT-x / AMD SVM Mode in the BIOS/UEFI, or to use Codespaces (backup repository in `CODESPACES.md`). |
+| Windows: `uv sync` fails with "Access is denied" | A Jupyter kernel from `.venv` (for example a notebook open in VS Code) locks its files. Stop it, rerun `uv sync --all-extras`. |
+| Windows: `python3` says "Python was not found" | Microsoft Store alias; ignore, `uv` provisions Python 3.11-3.13. |
 | Host port 1526 already taken | Set `ORACLE_HOST_PORT=1527` and `DB_CONNECT_STRING=localhost:1527/FREEPDB1` in `.env`, then re-run step 4. Change it in `.env`: `podman-compose` substitutes from that file even when the shell exports a different value. |
 | `Wrong Oracle container image` | The container was created from a different image. Recreate it (see the guardrail on `down -v`). |
 | `podman compose` fails with `dial unix /run/user/.../podman.sock` | The docker-compose provider needs the Podman API socket: `systemctl --user start podman.socket` (Linux), or install `podman-compose`; the scripts prefer it when the socket is down. |

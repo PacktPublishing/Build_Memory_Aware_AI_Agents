@@ -29,6 +29,9 @@ if ! container_engine_detect; then
       fi
       container_engine_hint docker >&2
       container_engine_hint podman >&2
+      if ce_windows_virtualization_off; then
+        ce_virtualization_message >&2
+      fi
       ;;
   esac
   echo "See SETUP.md step 2 and TROUBLESHOOTING.md." >&2
@@ -126,8 +129,9 @@ else
 fi
 
 echo "Applying workshop VECTOR user/grants..."
-"$CONTAINER_ENGINE" exec -i "$CONTAINER_NAME" \
-  bash -lc "sqlplus -s sys/${ORACLE_PASSWORD_VALUE}@localhost/FREEPDB1 as sysdba" < sql/init/01-create-vector-user.sql
+# Windows checkouts are CRLF; sqlplus runs in Linux, so hand it LF only.
+tr -d '\r' < sql/init/01-create-vector-user.sql | "$CONTAINER_ENGINE" exec -i "$CONTAINER_NAME" \
+  bash -lc "sqlplus -s sys/${ORACLE_PASSWORD_VALUE}@localhost/FREEPDB1 as sysdba"
 if sql_ready VECTOR; then
   echo "✓ VECTOR user can connect"
   "${COMPOSE_CMD[@]}" ps

@@ -14,6 +14,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
+from . import use_utf8_output
+
 
 @dataclass(frozen=True)
 class SyntheticMessage:
@@ -305,6 +307,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    use_utf8_output()
     parser = build_parser()
     args = parser.parse_args(argv)
     from .connection import load_env

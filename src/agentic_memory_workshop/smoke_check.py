@@ -6,6 +6,7 @@ import argparse
 import importlib.util
 from pathlib import Path
 
+from . import use_utf8_output
 from .connection import load_env, oracle_settings
 
 
@@ -159,6 +160,7 @@ def check_onnx_model() -> bool:
 
 
 def main(argv: list[str] | None = None) -> int:
+    use_utf8_output()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--offline", action="store_true", help="Skip imports and Oracle connection.")
     parser.add_argument("--require-onnx", action="store_true", help="Fail unless the in-database ONNX model is loaded and callable.")

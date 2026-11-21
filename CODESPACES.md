@@ -2,6 +2,15 @@
 
 Codespaces runs the whole workshop in the browser: no Docker, Python, or API key on your machine. The devcontainer runs Oracle AI Database Free inside Docker-in-Docker, so the same `scripts/` run unchanged and the engine detection picks Docker.
 
+> **Local setup failing on the day? Use the backup repository** <https://github.com/jasperan-org/build-memory-aware-ai-agents>: the same workshop, ready in GitHub Codespaces, with the shared OCI Generative AI keys already set as Codespaces secrets for collaborators (the workshop organizer pays for their Codespaces).
+>
+> 1. Ask the instructor to add you as a collaborator (write access) of <https://github.com/jasperan-org/build-memory-aware-ai-agents>.
+> 2. Accept the invitation: the email from GitHub, or <https://github.com/jasperan-org/build-memory-aware-ai-agents/invitations>.
+> 3. Create the Codespace: [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/jasperan-org/build-memory-aware-ai-agents)
+> 4. Created it before accepting? Stop the Codespace and start it again: the shared OCI Generative AI keys are injected as Codespaces secrets at start.
+>
+> Without an invitation you can still use the Packt repository's button below; your own GitHub account pays and you use the keys in `.env.example`.
+
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/PacktPublishing/Build_Memory_Aware_AI_Agents)
 
 ## Attendee steps
@@ -36,8 +45,8 @@ uv run jupyter nbconvert --to notebook --execute \
 | Lifecycle step | Script | What it runs |
 |---|---|---|
 | `onCreateCommand` | `.devcontainer/on-create.sh` | Installs `uv`, `uv sync --all-extras`, registers the `agentic-memory` notebook kernel (`workshop-kernel`), creates `.env` from `.env.example` (shared LLM keys included), offline smoke check |
-| `postCreateCommand` | `.devcontainer/post-create.sh` | Waits for Docker, `scripts/setup_oracle.sh` (container, vector memory pool, `VECTOR` user), `scripts/load_onnx_model.py`, `workshop-smoke-check --require-onnx` (includes a live LLM call) |
-| `postStartCommand` | `.devcontainer/post-start.sh` | After a stopped Codespace resumes: starts the Oracle container again; a running one is left untouched |
+| `postCreateCommand` | `.devcontainer/post-create.sh` | Copies any environment variable named like a key in `.env.example` (Codespaces secrets arrive that way) into `.env` via `.devcontainer/env-from-secrets.sh`, waits for Docker, `scripts/setup_oracle.sh` (container, vector memory pool, `VECTOR` user), `scripts/load_onnx_model.py`, `workshop-smoke-check --require-onnx` (includes a live LLM call) |
+| `postStartCommand` | `.devcontainer/post-start.sh` | Repeats the secrets-to-`.env` copy (secrets are injected at start), then, after a stopped Codespace resumes, starts the Oracle container again; a running one is left untouched |
 
 Every step is idempotent. If something failed, rerun it by hand:
 
