@@ -27,13 +27,13 @@ hard failures; warnings can wait.
 test -f .env || cp .env.example .env
 ```
 
-Never overwrite an existing `.env`. `.env.example` ships shared OCI Generative AI keys
-for the session (rotated afterwards), so the attendee needs no personal key:
-`OAMP_LLM=openai/xai.grok-4.3`, three keys on the Phoenix endpoint, three on Chicago as
-failover. If the human wants their own provider instead, they blank both
-`OCI_GENAI_*ENDPOINT` lines and set `OAMP_LLM` plus the matching key (`gpt-4o-mini` with
-`OPENAI_API_KEY`, `anthropic/claude-...` with `ANTHROPIC_API_KEY`, `ollama/llama3.1`
-with a local Ollama server). Step 7 proves the pair with a live call.
+Never overwrite an existing `.env`. `.env.example` ships no LLM key. The default is
+`OAMP_LLM=openai/xai.grok-4.3` on OCI Generative AI: ask the human for their OCI Generative
+AI API key and put it after `OCI_GENAI_API_KEY=` in `.env` (never in `.env.example`, never
+echoed back). If they want their own provider instead, blank both `OCI_GENAI_*ENDPOINT`
+lines and set `OAMP_LLM` plus the matching key (`gpt-4o-mini` with `OPENAI_API_KEY`,
+`anthropic/claude-...` with `ANTHROPIC_API_KEY`, `ollama/llama3.1` with a local Ollama
+server). Step 7 proves the pair with a live call.
 
 ## 3. Detect the container engine
 

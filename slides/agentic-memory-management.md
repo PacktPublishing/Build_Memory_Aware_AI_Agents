@@ -152,7 +152,7 @@ Get the pull started in the first three minutes, before any talk track. Say plai
 | Container engine will not start | GitHub Codespaces path in `CODESPACES.md` |
 | No coding agent, or it refuses | Manual path in `SETUP.md` (same commands in `PREWORK.md`) |
 | `jupyter: command not found` | Re-run `uv sync --all-extras` (plain `uv sync` skips the notebook extras) |
-| `✗ LLM call` in the smoke check | Compare `.env` with `.env.example`: the shared OCI keys ship there, no personal key needed |
+| `✗ LLM call` in the smoke check | Paste your OCI Generative AI API key after `OCI_GENAI_API_KEY=` in `.env`, or set your own provider (see `.env.example`) |
 
 <!--
 Podman on macOS/Windows: scripts/container_engine.sh prints the `podman machine init --memory 8192 && podman machine start` step.

@@ -41,8 +41,8 @@ The session runs the notebooks in this order: **Lab 1** (`01_oamp_memory_agent.i
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/PacktPublishing/Build_Memory_Aware_AI_Agents)
 
 1. Click the button, keep the default 4-core machine, then **Create codespace**.
-2. Wait for creation, about 10 minutes the first time (mostly the Oracle image download). It installs the Python environment and the notebook kernel, starts Oracle AI Database, loads the ONNX model, and runs the readiness check. Follow it with Command Palette → **Codespaces: View Creation Log**; it is done when it prints `Workshop environment ready.` (an earlier `All requested checks passed.` is only the offline file check).
-3. In the Codespace terminal, confirm:
+2. Wait for creation, about 10 minutes the first time (mostly the Oracle image download). It installs the Python environment and the notebook kernel, starts Oracle AI Database, loads the ONNX model, and runs the readiness check. Follow it with Command Palette → **Codespaces: View Creation Log**; it is done when it prints `Workshop environment ready.` (an earlier `All requested checks passed.` is only the offline file check). Without an LLM key it ends with `✗ LLM call` and `Readiness check failed` instead; step 3 fixes that.
+3. Open `.env`, paste your OCI Generative AI API key after `OCI_GENAI_API_KEY=` (or set your own provider, see [Runtime Notes](#runtime-notes)), save, and confirm in the Codespace terminal:
 
    ```bash
    uv run workshop-smoke-check --require-onnx
@@ -54,7 +54,9 @@ Details and the lifecycle scripts: [`CODESPACES.md`](CODESPACES.md).
 
 ### Option B — your machine (Docker or Podman)
 
-You need a running Docker or Podman (8 GB of memory for containers), Python 3.11-3.13 (`uv` downloads a matching Python when none is installed), and `uv` (`curl -LsSf https://astral.sh/uv/install.sh | sh`; on Windows run it in Git Bash, or in PowerShell: `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`). On Windows run the scripts from Git Bash (installed with Git for Windows); a WSL2 terminal also works. Install notes per OS: [`SETUP.md`](SETUP.md).
+You need a running Docker or Podman (8 GB of memory for containers), Python 3.11-3.13 (`uv` downloads a matching Python when none is installed), `uv` (`curl -LsSf https://astral.sh/uv/install.sh | sh`; on Windows run it in Git Bash, or in PowerShell: `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`), and an LLM key: an OCI Generative AI API key by default, or your own provider's (see [Runtime Notes](#runtime-notes)). On Windows run the scripts from Git Bash (installed with Git for Windows); a WSL2 terminal also works. Install notes per OS: [`SETUP.md`](SETUP.md).
+
+After the `cp` line, open `.env` and paste your key after `OCI_GENAI_API_KEY=`; the smoke check makes a live call with it.
 
 ```bash
 git clone https://github.com/PacktPublishing/Build_Memory_Aware_AI_Agents.git
@@ -104,7 +106,7 @@ Lab 3 puts the day's patterns to work on Meridian Bank, a fictional bank whose d
 
 Your Lab 1–2 Codespace can keep running alongside it; stop it from <https://github.com/codespaces> when you are done to save your free Codespaces hours.
 
-Everything the labs need is in this repository: setup scripts, the pinned Oracle AI Database container definition, the helper package, sample tools and skills, the three notebooks, the slide deck (`slides/agentic-memory-management.pdf`, text version in `slides/agentic-memory-management.md`), and shared OCI Generative AI keys for the LLM cells (`.env.example`; they are rotated after the session, so no personal API key is needed).
+Everything the labs need is in this repository except an LLM key: setup scripts, the pinned Oracle AI Database container definition, the helper package, sample tools and skills, the three notebooks, the slide deck (`slides/agentic-memory-management.pdf`, text version in `slides/agentic-memory-management.md`), and the LLM settings in `.env.example` with an empty `OCI_GENAI_API_KEY=` line for your key.
 
 ## What You Build
 
@@ -129,7 +131,7 @@ The environment is set up **during** the live session, in the first 15 minutes. 
 | Python 3.11-3.13 (3.12 recommended; `uv` downloads one if missing) | Runs the labs; Jupyter comes from `uv sync` |
 | A coding agent such as Claude Code or Codex | Runs the setup for you with this repo's `AGENTS.md` instead of you typing commands |
 
-No LLM API key is needed: `.env.example` carries shared OCI Generative AI keys for the session.
+You need an LLM key: an OCI Generative AI API key (paste it into `.env` as `OCI_GENAI_API_KEY`), or your own provider's key (see [Runtime Notes](#runtime-notes)).
 
 You do not need Oracle DBA experience, and you do not need to install anything during the workshop: the repo's scripts do it.
 
@@ -230,7 +232,7 @@ Oracle AI Database Free container (pinned release-26 image)
 ## Runtime Notes
 
 - OAMP base labs use `OAMP_EMBEDDER=oracle-db`, which routes embeddings through the in-database ONNX model after `scripts/load_onnx_model.py` runs.
-- The LLM is `OAMP_LLM=openai/xai.grok-4.3` on OCI Generative AI through its OpenAI-compatible API: three shared keys on the Phoenix endpoint, three on Chicago as automatic failover (`src/agentic_memory_workshop/llm.py`). To use your own provider instead, blank both `OCI_GENAI_*ENDPOINT` lines in `.env` and set `OAMP_LLM` plus its key (`gpt-4o-mini` with `OPENAI_API_KEY`, `anthropic/claude-...` with `ANTHROPIC_API_KEY`); the smoke check verifies the pair with a live call.
+- The LLM is `OAMP_LLM=openai/xai.grok-4.3` on OCI Generative AI through its OpenAI-compatible API, with your key in `OCI_GENAI_API_KEY` (`src/agentic_memory_workshop/llm.py`). Optional: `OCI_GENAI_API_KEY_2` .. `_6` add more keys on the Phoenix endpoint, and `OCI_GENAI_FALLBACK_API_KEY*` keys on the Chicago endpoint take over when Phoenix rejects or rate-limits a call. To use your own provider instead, blank both `OCI_GENAI_*ENDPOINT` lines in `.env` and set `OAMP_LLM` plus its key (`gpt-4o-mini` with `OPENAI_API_KEY`, `anthropic/claude-...` with `ANTHROPIC_API_KEY`, `ollama/llama3.1` with a local Ollama server); the smoke check verifies the pair with a live call.
 - `scripts/setup_oracle.sh` sizes Oracle's vector memory pool (`vector_memory_size=512M`, one restart on first setup), so HNSW vector indexes never fail with `ORA-51962`.
 - The toolbox/skillbox mini-lab uses Oracle `VECTOR_EMBEDDING(ALL_MINILM_L12_V2 ...)`. Load it with `scripts/load_onnx_model.py` before the session.
 - The synthetic generator is deterministic and offline by default; loading into Oracle is opt-in.

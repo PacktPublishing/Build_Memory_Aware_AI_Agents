@@ -9,7 +9,7 @@ Codespaces runs the whole workshop in the browser: no Docker, Python, or API key
 > 3. Create the Codespace: [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/jasperan-org/build-memory-aware-ai-agents)
 > 4. Created it before accepting? Stop the Codespace and start it again: the shared OCI Generative AI keys are injected as Codespaces secrets at start.
 >
-> Without an invitation you can still use the Packt repository's button below; your own GitHub account pays and you use the keys in `.env.example`.
+> Without an invitation you can still use the Packt repository's button below; your own GitHub account pays and you add your own LLM key (see [LLM keys](#llm-keys)).
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/PacktPublishing/Build_Memory_Aware_AI_Agents)
 
@@ -17,7 +17,7 @@ Codespaces runs the whole workshop in the browser: no Docker, Python, or API key
 
 1. Click the button above (or **Code → Codespaces → Create codespace on main** on the repository page).
 2. Keep the default machine type: the devcontainer asks for 4 cores (16 GB RAM, 32 GB disk), which Oracle and the ONNX load need. To fit that disk, Codespaces run the smaller `gvenzl/oracle-free` 23.26.4 faststart image (pinned by digest, database pre-built) instead of the official image that local installs use.
-3. Wait for creation to finish, about 10 minutes the first time. Follow it in the **Codespaces: creation log** (Command Palette → *Codespaces: View Creation Log*). It is done when it prints `Workshop environment ready.`; an earlier `All requested checks passed.` comes from the offline file check that runs before Oracle starts.
+3. Wait for creation to finish, about 10 minutes the first time. Follow it in the **Codespaces: creation log** (Command Palette → *Codespaces: View Creation Log*). It is done when it prints `Workshop environment ready.`; an earlier `All requested checks passed.` comes from the offline file check that runs before Oracle starts. Without an LLM key it ends with `✗ LLM call` and `Readiness check failed`: see [LLM keys](#llm-keys).
 4. In the Codespace terminal, confirm the environment:
 
    ```bash
@@ -56,7 +56,7 @@ bash .devcontainer/post-create.sh
 
 ## LLM keys
 
-`.env.example` carries the shared OCI Generative AI keys for the session (rotated afterwards), so nothing needs to be configured. To use your own provider, edit `.env`: blank both `OCI_GENAI_*ENDPOINT` lines and set `OAMP_LLM` plus its key, then run `uv run workshop-smoke-check --require-onnx`.
+`.env.example` ships no LLM key, so the first readiness check ends with `✗ LLM call` until you add one. Either paste your OCI Generative AI API key after `OCI_GENAI_API_KEY=` in `.env`, or add it before creating the Codespace as a [Codespaces secret](https://github.com/settings/codespaces) named `OCI_GENAI_API_KEY` for this repository (a secret wins over the empty `.env` line). To use your own provider, edit `.env`: blank both `OCI_GENAI_*ENDPOINT` lines and set `OAMP_LLM` plus its key. Then run `uv run workshop-smoke-check --require-onnx`.
 
 ## Instructor checks before the event
 

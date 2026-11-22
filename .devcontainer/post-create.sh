@@ -17,4 +17,6 @@ if uv run workshop-smoke-check --require-onnx; then
 else
   echo
   echo "Readiness check failed; see TROUBLESHOOTING.md, then rerun: bash .devcontainer/post-create.sh"
+  echo "Only the LLM call failed? Paste your OCI Generative AI API key after OCI_GENAI_API_KEY= in .env,"
+  echo "then run: uv run workshop-smoke-check --require-onnx"
 fi

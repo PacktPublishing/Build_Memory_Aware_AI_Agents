@@ -14,7 +14,7 @@ For the local path the pre-session list is short. Install the first three items,
 | 3 | A coding agent such as Claude Code or Codex | `claude --version` or `codex --version` |
 | 4 | At least 20 GB free disk | `df -h .` (the Oracle image is about a 4 GB download, about 14 GB on disk) |
 
-No LLM API key is needed: the repo ships shared OCI Generative AI keys for the session. Jupyter is **not** on that list either: `uv sync --all-extras` installs it with the rest of the notebook dependencies. You do not need Oracle DBA experience, and you do not need to install `oracleagentmemory` or `litellm` by hand.
+You also need an LLM key: an OCI Generative AI API key by default, or your own provider's (section 3). Jupyter is **not** on that list: `uv sync --all-extras` installs it with the rest of the notebook dependencies. You do not need Oracle DBA experience, and you do not need to install `oracleagentmemory` or `litellm` by hand.
 
 If any of this fails on your machine, use Codespaces so you can still take part. The backup repository <https://github.com/jasperan-org/build-memory-aware-ai-agents> is the same workshop ready in Codespaces: ask the instructor to add you as a collaborator, accept the invitation, then create the Codespace (details in [`CODESPACES.md`](CODESPACES.md)).
 
@@ -123,9 +123,9 @@ The same `curl` installer works in Git Bash. PowerShell alternative: `powershell
 
 ---
 
-## 3. No LLM key needed
+## 3. Get an LLM key
 
-The Lab 1 LLM turns and the OAMP extraction cells use `OAMP_LLM=openai/xai.grok-4.3` on OCI Generative AI. `.env.example` carries shared keys for the session (three on the Phoenix endpoint, three on Chicago as automatic failover); the setup copies it to `.env`, and the keys are rotated after the workshop.
+The Lab 1 LLM turns and the OAMP extraction cells use `OAMP_LLM=openai/xai.grok-4.3` on OCI Generative AI. Create an OCI Generative AI API key (OCI Console → Analytics & AI → Generative AI → API keys) and paste it after `OCI_GENAI_API_KEY=` in `.env`; the setup copies `.env.example` to `.env`, which ships without a key.
 
 To use your own provider instead, blank both `OCI_GENAI_*ENDPOINT` lines in `.env` and set `OAMP_LLM` plus its key:
 

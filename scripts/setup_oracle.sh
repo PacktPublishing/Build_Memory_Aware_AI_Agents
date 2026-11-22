@@ -43,7 +43,7 @@ echo "Using ${CONTAINER_ENGINE} with compose command: ${COMPOSE_CMD[*]}"
 
 if [ ! -f .env ]; then
   cp .env.example .env
-  echo "Created .env from .env.example (it carries the shared workshop LLM keys)."
+  echo "Created .env from .env.example; paste your LLM key after OCI_GENAI_API_KEY= in .env."
 fi
 
 # Never recreate a running container: open notebook connections would drop (DPY-4011).

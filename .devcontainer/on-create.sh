@@ -14,7 +14,7 @@ uv run workshop-kernel --user
 
 if [ ! -f .env ]; then
   cp .env.example .env
-  echo "Created .env from .env.example (shared workshop LLM keys included)."
+  echo "Created .env from .env.example; paste your LLM key after OCI_GENAI_API_KEY= in .env (or use a Codespaces secret)."
 fi
 
 uv run workshop-smoke-check --offline

@@ -155,13 +155,15 @@ if [ -f .env ]; then ok ".env exists"; else warn ".env missing; setup_oracle.sh 
 
 env_file=.env
 [ -f "$env_file" ] || env_file=.env.example
+# A key exported in the shell (or a Codespaces secret) counts even when .env leaves it empty.
+pre_keys=$(env | grep -Ec '^OCI_GENAI_(FALLBACK_)?API_KEY(_[0-9])?=.+' || true)
 # shellcheck disable=SC1090
 set -a; source "$env_file"; set +a
 if [ -n "${OCI_GENAI_ENDPOINT:-}${OCI_GENAI_FALLBACK_ENDPOINT:-}" ]; then
-  if env | grep -Eq '^OCI_GENAI_(FALLBACK_)?API_KEY(_[0-9])?=.+'; then
-    ok "OAMP_LLM=${OAMP_LLM:-unset} through the shared OCI Generative AI keys"
+  if [ "$pre_keys" -gt 0 ] || env | grep -Eq '^OCI_GENAI_(FALLBACK_)?API_KEY(_[0-9])?=.+'; then
+    ok "OAMP_LLM=${OAMP_LLM:-unset} through your OCI Generative AI key"
   else
-    warn "OCI_GENAI_ENDPOINT is set but no OCI_GENAI_API_KEY* value is; copy them from .env.example"
+    warn "no OCI_GENAI_API_KEY yet: paste your OCI Generative AI API key after OCI_GENAI_API_KEY= in .env, or set your own provider (see .env.example)"
   fi
 elif [ -n "${OAMP_LLM:-}" ]; then
   warn "OAMP_LLM=$OAMP_LLM uses your own provider key; make sure that provider's key is set"

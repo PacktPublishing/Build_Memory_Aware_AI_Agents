@@ -1,11 +1,11 @@
 """LLM access for the labs: one LiteLLM model string, an ordered list of endpoint/key routes.
 
-The workshop ships shared OCI Generative AI keys in `.env.example`: three keys on the primary
-endpoint (`OCI_GENAI_ENDPOINT`, Phoenix) and three on the fallback endpoint
-(`OCI_GENAI_FALLBACK_ENDPOINT`, Chicago); up to six per endpoint are read. Both serve the same model through OCI's
-OpenAI-compatible API, which is why `OAMP_LLM` carries the `openai/` prefix. Every process
-shuffles the keys within each endpoint so a full room spreads its load, and a route that is
-rate limited, rejected, missing the model, or unreachable fails over to the next one.
+By default the labs call OCI Generative AI: `.env` holds your key(s) for the primary endpoint
+(`OCI_GENAI_ENDPOINT` + `OCI_GENAI_API_KEY`, `_2` .. `_6`, Phoenix) and optionally for the
+fallback endpoint (`OCI_GENAI_FALLBACK_ENDPOINT` + `OCI_GENAI_FALLBACK_API_KEY*`, Chicago).
+Both serve the same model through OCI's OpenAI-compatible API, which is why `OAMP_LLM` carries
+the `openai/` prefix. Every process shuffles the keys within each endpoint to spread load, and a
+route that is rate limited, rejected, missing the model, or unreachable fails over to the next one.
 
 Without an OCI endpoint configured, `OAMP_LLM` is a plain LiteLLM model string and LiteLLM
 reads the provider's own key variable (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, ...).
@@ -87,7 +87,7 @@ def llm_status() -> tuple[bool, str]:
     if any(os.environ.get(endpoint_var, "").strip() for endpoint_var, _ in ENDPOINT_GROUPS):
         routes = configured_routes()
         if not routes:
-            return False, "OCI_GENAI_ENDPOINT is set but no OCI_GENAI_API_KEY* value is; copy them from .env.example"
+            return False, "no OCI_GENAI_API_KEY is set; paste your OCI Generative AI API key into .env (see .env.example)"
         return True, f"{model} via {len(routes)} OCI Generative AI endpoint/key routes"
     if model.startswith("ollama/"):
         return True, f"{model} on the local Ollama server"
